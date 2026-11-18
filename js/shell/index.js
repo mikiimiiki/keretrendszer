@@ -6,7 +6,7 @@ import { createCloud } from "../core/cloud.js";
 import { createDevice } from "../core/device.js";
 import { makeRng } from "../core/rng.js";
 import { dayNum, dateKey, keyToDay, setToday, isSimulated } from "../core/dates.js";
-import { C, cur, persist, applyPrefs, speak, cloudIcon } from "./ctx.js";
+import { C, cur, persist, applyPrefs, speak } from "./ctx.js";
 import { settingsDefs } from "./settings-defs.js";
 import { normUser } from "./user.js";
 import { show, refreshAll, renderTop, renderHome } from "./home.js";
@@ -52,7 +52,7 @@ export function startShell({ game, pack }) {
       const a = document.activeElement;
       if (C.gearApi && !(a && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName))) C.gearApi.draw();
     },
-    onStatus: s => { $("tb-cloud-ic").textContent = cloudIcon(s.icon); $("tb-sync").textContent = s.text; $("tb-cloud").className = "pill btn-pill " + (s.cls || ""); $("tb-cloud").title = s.detail; renderCloudLive(); },
+    onStatus: s => { $("tb-cloud-ic").textContent = s.icon; $("tb-sync").textContent = s.text; $("tb-cloud").className = "pill btn-pill " + (s.cls || ""); $("tb-cloud").title = s.detail; renderCloudLive(); },
   });
 
   // ---- felolvasás gomb ----

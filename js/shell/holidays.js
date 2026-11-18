@@ -3,7 +3,7 @@ import { $, el, btn, toast, escHtml as esc } from "../core/dom.js";
 import { modal } from "../core/modal.js";
 import { dayNum, dateKey } from "../core/dates.js";
 import { activeEvents, claimOnce, adventState, adventDay, openWindow } from "../core/events.js";
-import { G, cur, prefs, save, confetti, itemIcon, itemLabel, wardrobeIn } from "./ctx.js";
+import { G, cur, prefs, save, confetti, itemIcon, itemLabel } from "./ctx.js";
 import { renderTop, renderHome } from "./home.js";
 import { openCollection } from "./collection.js";
 
@@ -31,7 +31,7 @@ function holidayModal(title, text, reward) {
     const row = el("div", "mbtns"); row.style.justifyContent = "center";
     const it = reward.find(r => r.item && !r.item.startsWith("st:") && G().catalog.itemById(r.item));
     row.append(btn(it ? "secondary" : "primary", "Szuper! 🎉", () => close()));
-    if (it) row.append(btn("primary", `Megnézem ${wardrobeIn()} ✨`, () => { close(); openCollection("wardrobe", G().catalog.itemById(it.item).kind); }));
+    if (it) row.append(btn("primary", "Megnézem a gyűjteményedben ✨", () => { close(); openCollection("wardrobe", G().catalog.itemById(it.item).kind); }));
     box.append(row);
   });
 }

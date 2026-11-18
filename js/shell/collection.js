@@ -6,7 +6,7 @@ import { histAgg, pctOf, compare } from "../core/progress.js";
 import { dayNum, dateKey } from "../core/dates.js";
 import { streakNow } from "../core/dailygoal.js";
 import { COMMON_BADGES } from "../core/badges.js";
-import { C, G, cur, saveUser, confetti, unlocked, look, itemIcon, wardrobeName, wardrobeIn } from "./ctx.js";
+import { C, G, cur, saveUser, confetti, unlocked, look, itemIcon } from "./ctx.js";
 
 let wardrobeKind = "av", api = null;
 
@@ -17,7 +17,7 @@ export function celebrateRank(i) {
     box.classList.add("celebrate");
     box.append(el("div", "big-emoji", "🎉"), el("h3", null, `Új rang: ${esc(R.name)}!`),
       el("p", null, `Kinyitottad: <b>${R.unlocks.map(id => `${itemIcon(id)} ${esc(cat.itemById(id).label)}`).join(", ")}</b>${R.title ? `<br>…és mostantól a neved mellett ott a <span class="legend-tag">${R.title}</span> felirat!` : ""}`),
-      el("p", "soft small", `Kipróbálod? ${wardrobeIn().charAt(0).toUpperCase() + wardrobeIn().slice(1)} bármikor átöltözhetsz.`));
+      el("p", "soft small", "Kipróbálod? A gyűjteményedben bármikor átöltözhetsz."));
     const row = el("div", "mbtns"); row.style.justifyContent = "center";
     row.append(btn("secondary", "Később", () => close()), btn("primary", "Kipróbálom ✨", () => { close(); openCollection("wardrobe", cat.itemById(R.unlocks[0]).kind); }));
     box.append(row);
@@ -29,10 +29,10 @@ export function openCollection(tab, kind) {
   if (kind) wardrobeKind = kind;
   if (api) { api.close && api.close(); }
   api = openTabs({
-    id: "collection", title: G().texts.collectionTitle ?? "🎒 Gyűjtemény", ariaLabel: "Gyűjtemény", startTab: tab,
+    id: "collection", title: "", ariaLabel: "Gyűjtemény", // nincs külön cím, csak a fülek és a ✕ startTab: tab,
     tabs: [
       { id: "ranks", icon: "🪜", label: "Ranglétra", help: "A rangod, és hogy melyik rangnál mi nyílik ki.", render: ranksTab },
-      { id: "wardrobe", icon: "👕", label: wardrobeName(), help: "Kattints egy kinyitott tárgyra, és felveszed.", render: wardrobeTab },
+      { id: "wardrobe", icon: "👕", label: "Gyűjteményem", help: "Kattints egy kinyitott tárgyra, és felveszed.", render: wardrobeTab },
       { id: "results", icon: "📊", label: "Eredményeim", help: "Az utolsó 7 nap, a témák és a jelvényeid.", render: resultsTab },
       ...(C.pack.collectionTabs || []).map(t => ({ ...t, render: (box, ctx) => t.render(box, { ...ctx, user: cur() }) })),
     ],
