@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Matek Űrkaland</title>
+  <meta name="description" content="Felkészítő a 4. évfolyamosok központi matematika felvételijére">
+  <meta name="theme-color" content="#1e1b4b">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="stars" aria-hidden="true"></div>
+
+  <!-- Felső sáv -->
+  <header class="topbar">
+    <button id="tb-user" class="tb-user" type="button" title="Játékos váltása"><span id="tb-avatar">🧑‍🚀</span> <span id="tb-name">Játékos</span></button>
+    <div class="tb-stats">
+      <span class="pill" id="tb-pts-pill" title="Pontok"><span id="tb-pts-ic">⛽</span> <b id="tb-pts">0</b></span>
+      <span class="pill" title="Napos sorozat">🔥 <b id="tb-streak">0</b></span>
+      <button id="tb-big" class="pill btn-pill" type="button" title="Napi nagy cél">🏆 <b id="tb-big-n">0</b>/<span id="tb-big-goal">30</span><small id="tb-mult" class="mult"></small></button>
+    </div>
+    <div class="tb-right">
+      <button id="tb-cloud" class="pill btn-pill" type="button" title="Felhős mentés"><span id="tb-cloud-ic">☁️</span> <span id="tb-sync">Helyi mód</span></button>
+      <button id="tb-help" class="pill btn-pill" type="button" title="Súgó (F1)">❓ Súgó</button>
+      <button id="tb-gear" class="pill btn-pill gear" type="button" title="Szülői beállítások (PIN)" aria-label="Szülői beállítások">⚙️</button>
+    </div>
+  </header>
+
+  <!-- Kezdőképernyő: küldetés, napi nagy cél, rang, témák (a szövegeket a közös váz tölti ki) -->
+  <main id="scr-home" class="screen on">
+    <section class="hero">
+      <div class="mascot" id="mascot" aria-hidden="true">🚀</div>
+      <h1 id="app-title">Matek Űrkaland</h1>
+      <p class="hello" id="home-hello">Szia!</p>
+    </section>
+
+    <section class="mission card" id="mission">
+      <div class="mission-head">
+        <div>
+          <h2>Mai küldetés</h2>
+          <p class="soft" id="mission-sub">10 feladat vagy 15 perc</p>
+        </div>
+        <button id="btn-mission" class="primary big" type="button">🚀 Indítás</button>
+      </div>
+      <div class="bar"><i id="mission-bar"></i></div>
+      <p class="soft small" id="mission-note"></p>
+      <div class="biggoal" id="biggoal">
+        <div class="bg-top"><b>🏆 Napi nagy cél</b><span class="soft small" id="biggoal-txt"></span></div>
+        <div class="bar gold"><i id="biggoal-bar"></i></div>
+      </div>
+    </section>
+
+    <section class="advent card" id="advent" hidden></section>
+
+    <section class="rankrow">
+      <div class="card rankbox" id="rankbox" role="button" tabindex="0" title="Ranglétra és szekrény (Enter)">
+        <div class="rank-top"><b id="rank-name">Űrkadét</b><span class="rank-more">Ranglétra ›</span></div>
+        <div class="bar"><i id="rank-bar"></i></div>
+        <p class="soft small rank-next" id="rank-next"></p>
+      </div>
+      <div class="card rewardbox" id="reward-box" hidden></div>
+    </section>
+
+    <h2 class="section-title"><span id="map-title">Bolygók</span> <span class="soft small" id="map-hint"></span></h2>
+    <p class="lock-note" id="lock-note" hidden></p>
+    <section class="map" id="map"></section>
+    <p class="keys-hint"></p>
+
+    <h2 class="section-title">Jelvények</h2>
+    <section class="badges" id="badges"></section>
+
+    <p class="pencil" id="home-tip"></p>
+  </main>
+
+  <!-- Gyakorlás -->
+  <main id="scr-play" class="screen">
+    <div class="play-head">
+      <button id="play-exit" class="ghost" type="button" title="Kilépés">✕ Vissza</button>
+      <div class="play-title" id="play-title">Küldetés</div>
+      <div class="dots" id="play-dots"></div>
+      <button id="play-tts" class="ghost" type="button" title="Felolvasás be/ki" aria-pressed="false">🔇</button>
+    </div>
+    <div class="play-grid">
+      <section class="card task" id="task">
+        <div class="task-meta" id="task-meta"></div>
+        <div class="task-q" id="task-q"></div>
+        <div class="task-viz" id="task-viz"></div>
+        <div class="answer" id="answer"></div>
+        <div class="task-actions" id="task-actions"></div>
+        <p class="pencil small" id="play-tip"></p>
+      </section>
+      <aside class="card side" id="side">
+        <div id="side-body" class="side-body">
+          <div class="side-empty">
+            <div class="big-emoji">🧑‍🚀</div>
+            <p>Olvasd el figyelmesen a feladatot!<br>Ha elakadsz, a hiba után itt kapsz segítséget.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Értesítés, konfetti (a felugró ablakokat a js/core/modal.js hozza létre) -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
