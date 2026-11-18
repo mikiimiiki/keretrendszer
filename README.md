@@ -23,6 +23,12 @@ Erre épül: **Matek Űrkaland** (felvételi felkészítő), **Helyesírás Kala
 4. Szabd testre a ranglétrát (`js/game/ranks.js`: a ranghatárok közösek, a nevek és tárgyak sajátok), a tárgyakat, az ünnepeket és az ajándékokat.
 5. Futtasd: `python -m http.server`, majd `http://localhost:8000/#debug`.
 
+## Játékonként állítható szövegek és ikonok (GAME)
+
+- `texts.wardrobe` / `texts.wardrobeIn`: a 🎒 Gyűjtemény „Szekrény” fülének neve és ragozott alakja (alap: „Szekrény” / „a szekrényben”).
+- `texts.collectionTitle`: a Gyűjtemény ablak címe (alap: „🎒 Gyűjtemény”; üres szövegnél nincs cím, csak a ✕).
+- `cloudIcons`: a felhőjelző ikonjainak cseréje, pl. `{ "✅": "📡" }` (a felső sávban és a ☁️ ablakban is).
+
 ## A feladatcsomag szerződése (PACK)
 
 ```js

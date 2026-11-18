@@ -259,6 +259,8 @@ b.big { font-size: 1.35em; color: var(--pri); }
 .tabs-head { display: flex; align-items: center; gap: 10px; }
 .tabs-modal .tabs-head { padding: 16px 20px 6px; }
 .tabs-head h3 { margin: 0; flex: 1; }
+.tabs-head.notitle { justify-content: flex-end; }
+.tabs-modal .tabs-head.notitle { padding-bottom: 0; }
 .modal-box .ghost { background: #f1f5f9; color: var(--ink); }
 .modal-box .ghost.danger, .modal-box .danger { color: var(--bad); }
 .tabs-x { font-size: 18px; padding: 6px 12px; }

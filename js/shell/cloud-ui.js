@@ -1,7 +1,7 @@
 // ===== Felhő: élő állapot, eseménynapló, belépés, család (☁️ kis ablak és a ⚙️ Felhő fül) =====
 import { $, el, btn, escHtml as esc } from "../core/dom.js";
 import { modal } from "../core/modal.js";
-import { C } from "./ctx.js";
+import { C, cloudIcon } from "./ctx.js";
 import { openGear } from "./players.js";
 
 let cloudBox = null;
@@ -9,7 +9,7 @@ export function renderCloudLive() {
   document.querySelectorAll(".cloud-live").forEach(box => {
     const cloud = C.cloud, st = cloud.status();
     const ev = cloud.events.slice(-12).reverse();
-    box.innerHTML = `<div class="cl-status ${st.cls || ""}"><span class="cl-ic">${st.icon}</span><div><b>${esc(st.text)}</b><div class="small">${esc(st.detail)}</div></div></div>`
+    box.innerHTML = `<div class="cl-status ${st.cls || ""}"><span class="cl-ic">${cloudIcon(st.icon)}</span><div><b>${esc(st.text)}</b><div class="small">${esc(st.detail)}</div></div></div>`
       + (cloud.ready ? `<div class="small soft">Család: ${esc(cloud.familyCode.slice(0, 7))}… · Feltöltésre vár: ${cloud.pendingCount}</div>` : "")
       + (ev.length ? `<details class="cl-log"${st.cls === "err" || st.cls === "warn" || box.classList.contains("log-open") ? " open" : ""}><summary>Eseménynapló (${ev.length})</summary>${ev.map(e => `<div class="${e.err ? "bad" : ""}"><span class="soft">${new Date(e.t).toLocaleTimeString("hu-HU")}</span> ${e.icon} ${esc(e.text)}</div>`).join("")}</details>` : "");
   });

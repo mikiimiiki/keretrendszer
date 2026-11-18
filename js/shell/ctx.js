@@ -54,6 +54,11 @@ export function applyLook() {
 }
 // Tárgy ikonja és neve (matrica: "st:…")
 export const itemIcon = id => { if (id.startsWith("st:")) return id.slice(3); const it = G().catalog.itemById(id); if (!it) return ""; if (it.kind === "bg") return it.special ? "🎄" : "🌌"; return it.show || ""; };
+// A felhőjelző ikonja: a játék lecserélheti (GAME.cloudIcons, pl. { "✅": "📡" })
+export const cloudIcon = ic => ((C.game && C.game.cloudIcons) || {})[ic] || ic;
+// A szekrény neve és ragozott alakja (GAME.texts.wardrobe / wardrobeIn), alapból „Szekrény” / „a szekrényben”
+export const wardrobeName = () => (C.game && C.game.texts && C.game.texts.wardrobe) || "Szekrény";
+export const wardrobeIn = () => (C.game && C.game.texts && C.game.texts.wardrobeIn) || "a szekrényben";
 export const itemLabel = id => id.startsWith("st:") ? "matrica" : (G().catalog.itemById(id) || { label: id }).label;
 
 // ---- konfetti a felvett stílusban ----
