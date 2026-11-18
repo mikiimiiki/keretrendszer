@@ -10,6 +10,7 @@ import { diff, merge, apply, stable } from "../js/core/syncdiff.js";
 import { makeRng } from "../js/core/rng.js";
 import { newUser, normUser } from "../js/shell/user.js";
 import { settingsDefs } from "../js/shell/settings-defs.js";
+import { shCap, shEnd, shState } from "../js/core/stephelp.js";
 globalThis.document = { querySelector: () => null };
 const { PACK } = await import("../js/pack/index.js");
 const { GAME } = await import("../js/game/config.js");
@@ -31,6 +32,21 @@ ok(retypeState("kas", "kassza") === "" && retypeState("kasa", "kassza") === "bad
   ok(u.pts === 3 && u.days["2026-11-16"].pts === 3, "beírás: a +1 a pontba és a napi összesítőbe is bekerül");
   const has = P => settingsDefs(GAME, P).some(d => d.key === "retype");
   ok(!has({}) && has({ retype: true }) && settingsDefs(GAME, { retype: true }).find(d => d.key === "retype").default === "must", "beírás: a beállítás csak beírást kérő csomagnál látszik, alapból kötelező");
+}
+// 💡 lépésenkénti súgó
+ok(shCap(4) === 3 && shCap(3) === 2 && shCap(2) === 1 && shCap(1) === 1 && shCap(0) === 1, "súgó: a végeredményt nem mutatja (n−1 lépés), legalább 1");
+{
+  const st = { cut: 0, full: 0, free: 0 };
+  ok(shEnd(st, 3, 3) === null && shEnd(st, 3, 3) === "reduced" && st.cut === 1 && shCap(4, st) === 2, "súgó: két egymás utáni végignyomás → eggyel kevesebb lépés");
+  shEnd(st, 2, 2); ok(shEnd(st, 0, 2) === null && st.full === 0, "súgó: súgó nélküli feladat megszakítja a végignyomás-sorozatot");
+  shEnd(st, 2, 2); shEnd(st, 1, 2); ok(st.full === 0 && st.cut === 1, "súgó: részleges használat nem csökkent");
+  shEnd(st, 2, 2); shEnd(st, 2, 2); shEnd(st, 1, 1); shEnd(st, 1, 1); ok(st.cut === 3 && shCap(4, st) === 1 && shCap(3, st) === 1, "súgó: legfeljebb 1 lépésig csökken");
+  shEnd(st, 1, 1); shEnd(st, 1, 1); ok(st.cut === 3, "súgó: a csökkentésnek van alsó határa");
+  ok(shEnd(st, 0, 1) === null && shEnd(st, 0, 1) === null && shEnd(st, 0, 1) === "back" && st.cut === 2, "súgó: 3 súgó nélküli feladat → visszajön egy lépés");
+  ok(shEnd(st, 0, 1) === null && shEnd(st, 0, 1) === "all" && st.cut === 0, "súgó: 5 súgó nélküli feladat → visszajön minden");
+  const s2 = { cut: 2, full: 0, free: 2 }; shEnd(s2, 1, 1); ok(s2.free === 0 && shEnd(s2, 0, 1) === null && shEnd(s2, 0, 1) === null && s2.cut === 2, "súgó: súgóhasználat újraindítja a számolást");
+  const u = {}; shState(u, "T1").cut = 1; ok(u.stepHelp.T1.cut === 1 && shState(u, "T2").cut === 0, "súgó: témánként külön állapot");
+  ok(settingsDefs(GAME, { stepHelp: true }).some(d => d.key === "stepHelp" && d.default === true) && !settingsDefs(GAME, {}).some(d => d.key === "stepHelp"), "súgó: a beállítás csak a súgót kérő csomagnál látszik, alapból be");
 }
 // napi küldetés, sorozat, nagy cél
 {

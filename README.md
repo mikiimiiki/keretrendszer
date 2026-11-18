@@ -40,10 +40,13 @@ A váz minden játékban ugyanúgy néz ki és működik; játékonként csak az
   speechText(html), badges: [...], metrics: { kulcs: { label, value(u) } },
   help(id), topicLabel(id), subLabel(id, sub), parentTopics(box, u), collectionTabs: [...], coming?: [...],
   retype?: true                                                    // kér-e a csomag „írd le a helyes alakot” lépést
+  stepHelp?: true                                                  // kér-e lépésenkénti súgót (❓ / F1 feladat közben)
 }
 ```
 
 **Task:** `{ topic, sub, level, meta, q, viz, render(box, io) → ui, check(v) → { ok, feedback }, hint, steps[], why(v), answerText(v), correctText, solution, speech, plainQ, retype? }`
+
+**💡 Lépésenkénti súgó:** ha a csomag `stepHelp: true`, feladat közben a ❓ / F1 a megoldás levezetésének (`task.steps`) következő lépését mutatja a jobb oldali sávban – a végeredményt (utolsó lépés) soha, egylépéses feladatnál a tippet. Minden lépés egy segítség (−3 pont, legalább 2 marad). A ❓ gombon a hátralévő lépések száma látszik. Témánként és gyerekenként (`u.stepHelp`, `js/core/stephelp.js`): ha két egymás utáni feladatban végignyomja az összes elérhető lépést, a következőtől eggyel kevesebb érhető el (legalább 1); 3 súgó nélküli feladat után eggyel több, 5 után minden visszajön. Gyerekenként kikapcsolható (⚙️ Beállítások), alapból be; a beállítás csak súgót kérő csomagnál látszik.
 
 **✍️ A helyes alak beírása:** ha a csomag `retype: true`, és a feladat megadja a `retype` szöveget (pl. `"kassza"`), akkor már az első hibás válasznál (tipp-újrapróba nélkül) jön a magyarázat, utána középen felugrik egy beíró ablak; a továbblépő gomb csak a helyes beírás után aktív. Egyezés: betűre pontosan (ékezet, hosszú mássalhangzó), de a kis/nagybetű, a szélső szóköz és az Unicode-alak mindegy. +1 pont (`SCORING.retype`). Gyerekenként állítható (⚙️ Beállítások): kötelező (alap) / kihagyható / kikapcsolt; a beállítás csak beírást kérő csomagnál látszik. A mező fókusza azonnal, a koppintás kezelőjében kerül a helyére, így iPaden magától felugrik a billentyűzet. Esc: ki a körből a főmenübe.
 
