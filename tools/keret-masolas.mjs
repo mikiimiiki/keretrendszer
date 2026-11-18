@@ -40,7 +40,7 @@ function main() {
   let commit = "";
   try { commit = execSync("git rev-parse --short HEAD", { cwd: ROOT }).toString().trim(); } catch { /* nincs git */ }
   const pkg = JSON.parse(readFileSync(join(ROOT, "keret.json"), "utf8"));
-  const info = { keret: "urkaland-keret", verzio: pkg.verzio, commit, datum: new Date().toISOString().slice(0, 10), ujjlenyomat: want, fajlok: files };
+  const info = { keret: "keretrendszer", verzio: pkg.verzio, commit, datum: new Date().toISOString().slice(0, 10), ujjlenyomat: want, fajlok: files };
   writeFileSync(join(app, "KERET_VERZIO"), JSON.stringify(info, null, 2) + "\n");
   console.log(`✓ ${files.length} fájl átmásolva → ${app} (keret ${pkg.verzio}${commit ? " · " + commit : ""})`);
 }

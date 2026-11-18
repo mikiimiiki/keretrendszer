@@ -1,4 +1,4 @@
-# Űrkaland-keret
+# Keretrendszer
 
 Közös, paraméterezhető váz gyakorló játékokhoz. A váz egységes; játékonként csak a **feladatcsomag** (`js/pack`) és a **játék paraméterei** (`js/game`) térnek el.
 
