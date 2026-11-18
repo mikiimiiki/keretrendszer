@@ -45,7 +45,7 @@ A váz minden játékban ugyanúgy néz ki és működik; játékonként csak az
 
 **Task:** `{ topic, sub, level, meta, q, viz, render(box, io) → ui, check(v) → { ok, feedback }, hint, steps[], why(v), answerText(v), correctText, solution, speech, plainQ, retype? }`
 
-**✍️ A helyes alak beírása:** ha a csomag `retype: true`, és a feladat megadja a `retype` szöveget (pl. `"kassza"`), akkor hibás válasz és magyarázat után középen felugrik egy beíró ablak; a továbblépő gomb csak a helyes beírás után aktív. Egyezés: betűre pontosan (ékezet, hosszú mássalhangzó), de a kis/nagybetű, a szélső szóköz és az Unicode-alak mindegy. +1 pont (`SCORING.retype`). Gyerekenként állítható (⚙️ Beállítások): kötelező (alap) / kihagyható / kikapcsolt; a beállítás csak beírást kérő csomagnál látszik. A mező fókusza azonnal, a koppintás kezelőjében kerül a helyére, így iPaden magától felugrik a billentyűzet. Esc: ki a körből a főmenübe.
+**✍️ A helyes alak beírása:** ha a csomag `retype: true`, és a feladat megadja a `retype` szöveget (pl. `"kassza"`), akkor már az első hibás válasznál (tipp-újrapróba nélkül) jön a magyarázat, utána középen felugrik egy beíró ablak; a továbblépő gomb csak a helyes beírás után aktív. Egyezés: betűre pontosan (ékezet, hosszú mássalhangzó), de a kis/nagybetű, a szélső szóköz és az Unicode-alak mindegy. +1 pont (`SCORING.retype`). Gyerekenként állítható (⚙️ Beállítások): kötelező (alap) / kihagyható / kikapcsolt; a beállítás csak beírást kérő csomagnál látszik. A mező fókusza azonnal, a koppintás kezelőjében kerül a helyére, így iPaden magától felugrik a billentyűzet. Esc: ki a körből a főmenübe.
 
 **io** (a váz adja): `submit()`, `answering()`, `toast(üzenet)`, `useHelp()` (segítség → pontlevonás)
 
