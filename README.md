@@ -23,6 +23,10 @@ Erre épül: **Matek Űrkaland** (felvételi felkészítő), **Helyesírás Kala
 4. Szabd testre a ranglétrát (`js/game/ranks.js`: a ranghatárok közösek, a nevek és tárgyak sajátok), a tárgyakat, az ünnepeket és az ajándékokat.
 5. Futtasd: `python -m http.server`, majd `http://localhost:8000/#debug`.
 
+## Ha a szerver nem érhető el
+
+„Minden feladat után” és „Főmenübe lépéskor” módban, ha egy mentés vagy letöltés nem sikerül, lépcsőzetesen próbálkozik újra (`js/core/retry.js`): 3× 15 mp-enként → 3× percenként → 3× 5 percenként → utána 15 percenként, amíg az app nyitva van. Csak akkor, ha van várakozó adat, és csak előtérben (háttérbe kerüléskor kivár, előtérbe kerüléskor azonnal próbál). Közben a gyerek válaszai nem indítanak külön próbát, csak gyűlnek (📴 · N vár); a felhőjelző buborékja mutatja, mikor jön a következő próba. Azonnali próba, a lépcső előről: ha a böngésző jelzi, hogy visszajött a net (`online`), vagy a ☁️ ablakban „Mentés most” / „Újrakapcsolódás”. A naplóba csak a fordulópontok kerülnek (első hiba, lépcsőváltás, helyreállás). Folyamatos módban a Firebase saját újrakapcsolódása dolgozik. Tesztek: `tests/retry.test.mjs`, `tests/cloud.test.mjs`.
+
 ## Egységes kinézet
 
 A váz minden játékban ugyanúgy néz ki és működik; játékonként csak az tér el, aminek muszáj (téma, szövegek a `GAME.texts`-ben, ranglétra, tárgyak, feladatcsomag). Például: a felhőjelző a felső sávban csak ikon (online kapcsolatnál 📡), a 🎒 Gyűjtemény ablaknak nincs külön címe, a tárgyak füle „Gyűjteményem”.

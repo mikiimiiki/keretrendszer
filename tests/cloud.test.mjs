@@ -8,7 +8,7 @@ const mem = new Map();
 const mkStorage = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k), clear: () => m.clear() }; };
 globalThis.localStorage = mkStorage();
 globalThis.document = { visibilityState: "visible", addEventListener() {} };
-globalThis.addEventListener = () => {};
+const winL = {}; globalThis.addEventListener = (ev, fn) => { (winL[ev] = winL[ev] || []).push(fn); };
 void mem;
 
 // ---- memóriabeli Realtime Database ----
@@ -31,16 +31,16 @@ function makeServer() {
   const notify = () => listeners.forEach(l => { const v = clone(getAt(l.path)) ?? null; const s = JSON.stringify(v); if (s !== l.last) { l.last = s; l.cb({ val: () => clone(v) }); } });
   return { getAt, setAt, notify, listeners, dump: () => clone(root) };
 }
-function fakeFirebase(server, email) {
+function fakeFirebase(server, email, net = { down: false, calls: 0 }) {
   let online = true;
   const conn = [];
   const db = {};
   const dbm = {
     getDatabase: () => db,
     ref: (_db, path) => ({ path }),
-    get: async r => { if (!online) throw { code: "offline" }; return { val: () => clone(server.getAt(r.path)) ?? null }; },
-    set: async (r, v) => { if (!online) throw { code: "offline" }; server.setAt(r.path, v); server.notify(); },
-    update: async (r, obj) => { if (!online) throw { code: "offline" }; for (const [k, v] of Object.entries(obj)) { if (/\.|#|\$|\[|\]/.test(k)) throw new Error("invalid key " + k); server.setAt(r.path + "/" + k, v); } server.notify(); },
+    get: async r => { net.calls++; if (net.down) throw { code: "network-request-failed" }; if (!online) throw { code: "offline" }; return { val: () => clone(server.getAt(r.path)) ?? null }; },
+    set: async (r, v) => { net.calls++; if (net.down) throw { code: "network-request-failed" }; if (!online) throw { code: "offline" }; server.setAt(r.path, v); server.notify(); },
+    update: async (r, obj) => { net.calls++; if (net.down) throw { code: "network-request-failed" }; if (!online) throw { code: "offline" }; for (const [k, v] of Object.entries(obj)) { if (/\.|#|\$|\[|\]/.test(k)) throw new Error("invalid key " + k); server.setAt(r.path + "/" + k, v); } server.notify(); },
     remove: async r => { server.setAt(r.path, null); server.notify(); },
     onValue: (r, cb) => {
       if (r.path === ".info/connected") { const l = { cb }; conn.push(l); setTimeout(() => cb({ val: () => online }), 0); return () => conn.splice(conn.indexOf(l), 1); }
@@ -81,14 +81,14 @@ const server = makeServer();
 server.setAt(`families/${FAM}/members/szulo@example,com`, true);
 server.setAt(`memberOf/szulo@example,com/${FAM}`, true);
 
-function device(label, users = {}) {
+function device(label, users = {}, net) {
   globalThis.localStorage = mkStorage();   // minden eszköznek saját tárolója
   const store = localStorage;
   const state = { familyCode: FAM, current: Object.keys(users)[0] || "", users, settings: {}, deleted: {} };
   migrateFamily(state);
   Object.keys(users).forEach(n => { users[n] = migrateUser(E.normUser(users[n]), state); });
   const dev = createDevice("t_" + label);
-  const fbx = fakeFirebase(server, "szulo@example.com");
+  const fbx = fakeFirebase(server, "szulo@example.com", net);
   let refreshed = 0, devRec = null;
   const cloud = createCloud({
     state: () => state, persist: () => {}, refresh: () => { refreshed++; },
@@ -168,6 +168,23 @@ ok(!A.state.users.Anna, "A-n is törlődött");
 const bad = []; const walk = (o, p) => { if (o && typeof o === "object") for (const [k, v] of Object.entries(o)) { if (/[.$#\[\]\/]/.test(k)) bad.push(p + "/" + k); walk(v, p + "/" + k); } };
 walk(server.dump(), ""); ok(!bad.length, "nincs tiltott Firebase-kulcs" + (bad.length ? ": " + bad.slice(0, 3) : ""));
 void safeKey;
+
+// szerverkiesés: lépcsőzetes újrapróbálkozás (js/core/retry.js) – a válaszok közben csak gyűlnek
+{
+  const net = { down: false, calls: 0 };
+  const C = device("C", { Kata: E.newUser("Kata", "🐱") }, net);
+  await C.cloud.init(); await waitReady(C.cloud); await C.cloud.flush();
+  const cu = C.state.users.Kata;
+  net.down = true;
+  play(cu, 1); C.cloud.queue("Kata"); await C.cloud.flush();
+  const s1 = C.cloud.status();
+  ok(s1.icon === "📴" && s1.text === "Offline · 1 vár" && /Következő próbálkozás: kb\. 15 mp múlva/.test(s1.detail), "kiesés: 📴, „1 vár”, következő próba 15 mp múlva");
+  const calls = net.calls; play(cu, 1); C.cloud.queue("Kata"); await sleep(1800);
+  ok(net.calls === calls && C.cloud.status().text === "Offline · 1 vár", "kiesés közben a következő válasz nem indít külön próbát, csak gyűlik");
+  net.down = false; (winL.online || []).forEach(f => f()); for (let i = 0; i < 50 && C.cloud.status().icon !== "📡"; i++) await sleep(20);
+  const r = server.getAt(`families/${FAM}/users/Kata`) || {};
+  ok(C.cloud.status().icon === "📡" && r.total === cu.total, "visszajött a net: azonnal feltöltötte a várakozó változásokat");
+}
 
 console.log(fails ? `\n✗ ${fails} hiba` : "\n✓ Minden teszt rendben");
 process.exit(fails ? 1 : 0);
