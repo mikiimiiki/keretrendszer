@@ -2,7 +2,7 @@
 import { readFileSync, readdirSync } from "fs";
 import { score, SCORING } from "../js/core/scoring.js";
 import { missionProgress, completeMission, streakNow, addCorrect, bigProgress, setMult, multOf, giftPending, pickGift } from "../js/core/dailygoal.js";
-import { recordAnswer } from "../js/core/answers.js";
+import { recordAnswer, addBonus, retypeState } from "../js/core/answers.js";
 import { srsStep, newItem } from "../js/core/srs.js";
 import { setToday, keyToDay } from "../js/core/dates.js";
 import { inRange, claimOnce } from "../js/core/events.js";
@@ -21,6 +21,17 @@ const D = k => keyToDay(k);
 // pontozás
 ok(score({ r: 1, level: 1 }).pts === 10 && score({ r: 1, level: 3 }).pts === 15 && score({ r: 2 }).pts === 5 && score({ r: 0 }).pts === 2, "egységes pontozás: 10 / +5 a 3. szinten / 5 / 2");
 ok(score({ r: 1, level: 1, combo: 3 }).pts === 13 && score({ r: 1, level: 1, helps: 9 }).pts === SCORING.helpMin, "sorozatbónusz és segítség-levonás");
+// ✍️ a helyes alak beírása (hibás válasz után)
+ok(SCORING.retype === 1 && score({ r: 0 }).pts + SCORING.retype === 3, "beírás: a magyarázat 2 pontja + 1 = 3");
+ok(retypeState("kassza", "kassza") === "ok" && retypeState("  Kassza ", "kassza") === "ok" && retypeState("KASSZA", "kassza") === "ok", "beírás: kis/nagybetű és szélső szóköz mindegy");
+ok(retypeState("folyó", "folyó") === "ok", "beírás: a szétbontott ékezet (iPad) is jó");
+ok(retypeState("kas", "kassza") === "" && retypeState("kasa", "kassza") === "bad" && retypeState("kasza", "kassza") === "bad" && retypeState("folyo", "folyó") === "bad", "beírás: az ékezet és a hosszú mássalhangzó számít, eltérésnél piros");
+{
+  const u = newUser("B", "🦊", PACK); setToday(D("2026-11-16")); recordAnswer(u, { topic: "jelentes", r: 0, ms: 1000, pts: 2 }); addBonus(u, 1);
+  ok(u.pts === 3 && u.days["2026-11-16"].pts === 3, "beírás: a +1 a pontba és a napi összesítőbe is bekerül");
+  const has = P => settingsDefs(GAME, P).some(d => d.key === "retype");
+  ok(!has({}) && has({ retype: true }) && settingsDefs(GAME, { retype: true }).find(d => d.key === "retype").default === "must", "beírás: a beállítás csak beírást kérő csomagnál látszik, alapból kötelező");
+}
 // napi küldetés, sorozat, nagy cél
 {
   const u = newUser("A", "🦊", PACK), P = { goalTasks: 3, goalMin: 15 };
