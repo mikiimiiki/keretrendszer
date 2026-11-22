@@ -16,6 +16,8 @@ import { maybeAskDevice } from "./players.js";
 import { openHelp, openTopicHelp } from "./help.js";
 
 let S = null; // aktuális kör
+// „Vissza a főmenüre / térképre”: a -ra/-re a szó utolsó magánhangzója szerint (hangrend)
+const backHome = () => { const w = G().homeWord, v = (w.match(/[aáeéiíoóöőuúüű]/gi) || ["a"]).pop(); return `Vissza a ${w}${/[eéiíöőüű]/i.test(v) ? "re" : "ra"}`; };
 export const round = () => S;
 
 export function startMission() {
@@ -57,7 +59,7 @@ function reviewEnd(ok, all) {
       el("div", "dots", S.res.map(r => `<i class="${r === 1 ? "ok" : r === 2 ? "mid" : "bad"}"></i>`).join("")));
     box.lastChild.style.justifyContent = "center"; box.lastChild.style.margin = "8px 0";
     const row = el("div", "mbtns"); row.style.justifyContent = "center";
-    row.append(btn(left ? "secondary" : "primary", `Vissza a ${G().homeWord}ra`, () => { close(); goHome(); }));
+    row.append(btn(left ? "secondary" : "primary", backHome(), () => { close(); goHome(); }));
     if (left) row.append(btn("primary", "🩹 Még egy ismétlő kör", () => { close(); startReview(); }));
     box.append(row);
   }, { esc: close => { close(); goHome(); } });
@@ -227,7 +229,7 @@ function celebrate(me) {
       el("p", null, `🔥 <b>${me.streak} napos</b> sorozat!${me.shieldUsed ? "<br>🛡️ A heti pajzs megvédte a sorozatodat." : ""}`),
       el("p", null, me.badges.map(b => `${b.ic} ${b.n}`).join("<br>")));
     const row = el("div", "mbtns"); row.style.justifyContent = "center";
-    row.append(btn("secondary", "Még gyakorlok", () => close()), btn("primary", `Vissza a ${G().homeWord}ra`, () => { close(); goHome(); }));
+    row.append(btn("secondary", "Még gyakorlok", () => close()), btn("primary", backHome(), () => { close(); goHome(); }));
     box.append(row);
   });
 }
@@ -244,7 +246,7 @@ function endRound() {
       el("div", "dots", S.res.map(r => `<i class="${r === 1 ? "ok" : r === 2 ? "mid" : "bad"}"></i>`).join("")));
     box.lastChild.style.justifyContent = "center"; box.lastChild.style.margin = "8px 0";
     const row = el("div", "mbtns"); row.style.justifyContent = "center";
-    row.append(btn("secondary", `Vissza a ${G().homeWord}ra`, () => { close(); goHome(); }), btn("primary", "🔁 Még egy kör", () => { close(); startFree(t.id); }));
+    row.append(btn("secondary", backHome(), () => { close(); goHome(); }), btn("primary", "🔁 Még egy kör", () => { close(); startFree(t.id); }));
     box.append(row);
   }, { esc: close => { close(); goHome(); } });
 }
