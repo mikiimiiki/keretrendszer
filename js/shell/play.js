@@ -16,8 +16,8 @@ import { maybeAskDevice } from "./players.js";
 import { openHelp, openTopicHelp } from "./help.js";
 
 let S = null; // aktuális kör
-// „Vissza a főmenüre / térképre”: a -ra/-re a szó utolsó magánhangzója szerint (hangrend)
-const backHome = () => { const w = G().homeWord, v = (w.match(/[aáeéiíoóöőuúüű]/gi) || ["a"]).pop(); return `Vissza a ${w}${/[eéiíöőüű]/i.test(v) ? "re" : "ra"}`; };
+// „Vissza a főmenüre / térképre / bázisra”: a -ra/-re az utolsó nem i/í magánhangzó szerint (az i, í semleges)
+const backHome = () => { const w = G().homeWord, v = (w.match(/[aáeéoóöőuúüű]/gi) || ["e"]).pop(); return `Vissza a ${w}${/[aáoóuú]/i.test(v) ? "ra" : "re"}`; };
 export const round = () => S;
 
 export function startMission() {
