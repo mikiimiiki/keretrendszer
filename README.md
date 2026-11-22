@@ -79,6 +79,17 @@ node tools/keret-masolas.mjs ../Massalhangzok
 
 A szkript átmásolja a `js/core`, `js/shell`, `css/style.css` és `tests/keret.test.mjs` fájlokat (az `index.html`-t nem), és megírja az app `KERET_VERZIO` fájlját (verzió, commit, ujjlenyomat). Az app `tests/keret.test.mjs` tesztje jelzi, ha valaki kézzel átírta a másolatot. Ellenőrzés másolás nélkül: `node tools/keret-masolas.mjs ../Massalhangzok --check`.
 
+## Forrásfájlok exportja és visszaállítása
+
+Egy repó összes követett szöveges fájlja egyetlen Markdown-fájlba (pl. e-mailhez, átnézéshez, AI-nak), mindegyik előtt az elérési úttal (`# js/main.js` + kódblokk), és vissza:
+
+```bash
+python tools/forras-export.py ../Massalhangzok ../Massalhangzok_forras.md "Helyesírás Kaland"
+python tools/forras-import.py ../Massalhangzok_forras.md ../Massalhangzok_visszaallitva
+```
+
+A visszaállítás csak üres vagy új mappába ír (`--felulir`: meglévőbe is, `--proba`: csak kiírja, mit hozna létre), és nem ír a célmappán kívülre. A sorvégek LF-ek lesznek; a bináris fájlok (pl. képek) kimaradnak az exportból.
+
 ## Tesztek
 
 ```bash
