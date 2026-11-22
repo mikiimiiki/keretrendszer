@@ -45,6 +45,7 @@ A váz minden játékban ugyanúgy néz ki és működik; játékonként csak az
   help(id), topicLabel(id), subLabel(id, sub), parentTopics(box, u), collectionTabs: [...], coming?: [...],
   retype?: true                                                    // kér-e a csomag „írd le a helyes alakot” lépést
   stepHelp?: true                                                  // kér-e lépésenkénti súgót (❓ / F1 feladat közben)
+  review?: { count(u), plan(u, n, rng, nyitottTémák) → [{ topic, sub, … }], unit? } // 🩹 Ismétlő kör a hibás / esedékes feladatokból
 }
 ```
 
