@@ -8,9 +8,10 @@ Erre épül: **Matek Űrkaland** (felvételi felkészítő), **Helyesírás Kala
 
 | Mappa | Mi van benne | Hol szerkesztjük |
 |---|---|---|
-| `js/core/` | Játékfüggetlen keret: billentyűk, ablakok, fülek, beállításűrlap, fejlődés-adatok, diagram, **egységes pontozás** (`scoring.js`), **kétszintű napi cél** (`dailygoal.js`), válaszrögzítés, jelvénymotor, ismétlés (`srs.js`), felhő (`cloud.js`: szinkronmódok, részleges mentés, összefésülés), eszköz és forgalom, tárgyak, események, hóesés | **csak itt** |
-| `js/shell/` | A váz képernyői: kezdőlap, gyakorlókör (tipp → magyarázat → ikerfeladat), ⚙️ 6 fülös szülői ablak, 🎒 Gyűjtemény, ünnepek és adventi naptár, játékosok és eszközök, PIN, felhő-UI, súgó, napi nagy cél (serlegeső, ajándékdobozok, szorzó) | **csak itt** |
-| `css/style.css`, `index.html` | A váz stílusa és HTML-sablonja (a szövegeket a váz tölti ki) | **csak itt** |
+| `js/core/` | Játékfüggetlen keret: billentyűk, ablakok, fülek, beállításűrlap, fejlődés-adatok, diagram, **egységes pontozás** (`scoring.js`), **kétszintű napi cél** (`dailygoal.js`), válaszrögzítés (`answers.js`, a helyes alak egyezése is), jelvénymotor, ismétlés (`srs.js`), lépésenkénti súgó (`stephelp.js`), felhő (`cloud.js`: szinkronmódok, részleges mentés, összefésülés) és újrapróbálkozás (`retry.js`), eszköz és forgalom, tárgyak, események, hóesés | **csak itt** |
+| `js/shell/` | A váz képernyői: kezdőlap (🩹 Ismétlő kör kártya), gyakorlókör (tipp → magyarázat → ✍️ beírás → ikerfeladat, 💡 lépésenkénti súgó), ⚙️ 6 fülös szülői ablak, 🎒 Gyűjtemény, ünnepek és adventi naptár, játékosok és eszközök, PIN, felhő-UI, súgó, napi nagy cél (serlegeső, ajándékdobozok, szorzó) | **csak itt** |
+| `css/style.css` | A váz stílusa | **csak itt** |
+| `index.html` | A váz HTML-sablonja (a szövegeket a váz tölti ki). **Nem másolódik**: minden app saját példányt tart (saját cím, leírás, ikon, kabala, a csomag stíluslapja), a minta változásait kézzel kell átvezetni. | itt a minta, appban a saját |
 | `js/game/` | A játék paraméterei: `config.js` (GAME), ranglétra, tárgykatalógus, ünnepek, ajándékok, adatátállás, Firebase | játékonként |
 | `js/pack/` | A feladatcsomag (PACK) | játékonként |
 | `js/main.js` | `startShell({ game: GAME, pack: PACK })` | játékonként |
@@ -29,7 +30,7 @@ Erre épül: **Matek Űrkaland** (felvételi felkészítő), **Helyesírás Kala
 
 ## Egységes kinézet
 
-A váz minden játékban ugyanúgy néz ki és működik; játékonként csak az tér el, aminek muszáj (téma, szövegek a `GAME.texts`-ben, ranglétra, tárgyak, feladatcsomag). Például: a felhőjelző a felső sávban csak ikon (online kapcsolatnál 📡), a 🎒 Gyűjtemény ablaknak nincs külön címe, a tárgyak füle „Gyűjteményem”.
+A váz minden játékban ugyanúgy néz ki és működik; játékonként csak az tér el, aminek muszáj (téma, szövegek a `GAME.texts`-ben, ranglétra, tárgyak, feladatcsomag). Például: a felhőjelző és a Súgó gomb a felső sávban csak ikon (online kapcsolatnál 📡), a 🎒 Gyűjtemény ablaknak nincs külön címe, a tárgyak füle „Gyűjteményem”, a szinkronmód csak a ⚙️ Felhő fülön látszik, a kör végi gomb ragja a hangrend szerint igazodik („Vissza a főmenüre / térképre”).
 
 ## A feladatcsomag szerződése (PACK)
 
@@ -43,17 +44,21 @@ A váz minden játékban ugyanúgy néz ki és működik; játékonként csak az
   makeTask(item, rng, u) → Task, record(u, task, r) → { text, confetti } | null,
   speechText(html), badges: [...], metrics: { kulcs: { label, value(u) } },
   help(id), topicLabel(id), subLabel(id, sub), parentTopics(box, u), collectionTabs: [...], coming?: [...],
-  retype?: true                                                    // kér-e a csomag „írd le a helyes alakot” lépést
-  stepHelp?: true                                                  // kér-e lépésenkénti súgót (❓ / F1 feladat közben)
+  retype?: true,                                                   // kér-e a csomag „írd le a helyes alakot” lépést
+  stepHelp?: true,                                                 // kér-e lépésenkénti súgót (❓ / F1 feladat közben)
   review?: { count(u), plan(u, n, rng, nyitottTémák) → [{ topic, sub, … }], unit? } // 🩹 Ismétlő kör a hibás / esedékes feladatokból
 }
 ```
 
-**Task:** `{ topic, sub, level, meta, q, viz, render(box, io) → ui, check(v) → { ok, feedback }, hint, steps[], why(v), answerText(v), correctText, solution, speech, plainQ, retype? }`
+**Task:** `{ topic, sub, level, meta, q, viz, render(box, io) → ui, check(v) → { ok, feedback }, hint, steps[], why(v), answerText(v), correctText, solution, speech, plainQ, retype?, helpSteps? }`
 
 **💡 Lépésenkénti súgó:** ha a csomag `stepHelp: true`, feladat közben a ❓ / F1 a megoldás levezetésének (`task.steps`) következő lépését mutatja a jobb oldali sávban – a végeredményt (utolsó lépés) soha, egylépéses feladatnál a tippet. A csomag a feladatban megadhatja, pontosan mely lépéseket mutathatja a súgó (`task.helpSteps`, pl. kitakart eredménnyel vagy a megoldást felsoroló lépések nélkül; üres lista esetén a tipp jelenik meg). Minden lépés egy segítség (−3 pont, legalább 2 marad). A ❓ gombon a hátralévő lépések száma látszik. Témánként és gyerekenként (`u.stepHelp`, `js/core/stephelp.js`): ha két egymás utáni feladatban végignyomja az összes elérhető lépést, a következőtől eggyel kevesebb érhető el (legalább 1); 3 súgó nélküli feladat után eggyel több, 5 után minden visszajön. Gyerekenként kikapcsolható (⚙️ Beállítások), alapból be; a beállítás csak súgót kérő csomagnál látszik.
 
 **✍️ A helyes alak beírása:** ha a csomag `retype: true`, és a feladat megadja a `retype` szöveget (pl. `"kassza"`), akkor már az első hibás válasznál (tipp-újrapróba nélkül) jön a magyarázat, utána középen felugrik egy beíró ablak; a továbblépő gomb csak a helyes beírás után aktív. Egyezés: betűre pontosan (ékezet, hosszú mássalhangzó), de a kis/nagybetű, a szélső szóköz és az Unicode-alak mindegy. +1 pont (`SCORING.retype`). Gyerekenként állítható (⚙️ Beállítások): kötelező (alap) / kihagyható / kikapcsolt; a beállítás csak beírást kérő csomagnál látszik. A mező fókusza azonnal, a koppintás kezelőjében kerül a helyére, így iPaden magától felugrik a billentyűzet. Esc: ki a körből a főmenübe.
+
+**🩹 Ismétlő kör:** ha a csomag megadja a `review` objektumot, a kezdőlapon – csak ha `count(u) > 0` – megjelenik az „Ismétlő kör (N …)” kártya. A kör hossza a „Szabad gyakorlás egy körben” beállítás, legfeljebb `count(u)`; a tervet a `plan()` adja (a lezárt témák kihagyásával), a feladatokat a szokásos `makeTask()` készíti el (a tervelem tetszőleges mezőt vihet, pl. a matek a feladat magját). Ha a kör végén elfogytak az ismétlendők és minden elsőre jó volt: „Ügyes vagy, az összes hibát kijavítottad!”; különben összegzés és „Még egy ismétlő kör”.
+
+**Napi küldetés:** aznap összesen `goalTasks` feladat (a már megoldottak beszámítanak) vagy `goalMin` perc; teljesítés után a „Még egy kör” is `goalTasks` feladatos.
 
 **io** (a váz adja): `submit()`, `answering()`, `toast(üzenet)`, `useHelp()` (segítség → pontlevonás)
 
@@ -61,7 +66,7 @@ A váz minden játékban ugyanúgy néz ki és működik; játékonként csak az
 
 ## Egységes pontozás (`js/core/scoring.js`)
 
-Elsőre jó 10 (2. szinten +2, 3. szinten +5) · tipp után 5 · magyarázat után 2 · sorozatbónusz +3 a 3. egymás utáni elsőre jótól · hibából tanulás +3 · segítség −3 (legalább 2). Rossz válaszért nincs levonás. A ranghatárok (0–9000) is közösek.
+Elsőre jó 10 (2. szinten +2, 3. szinten +5) · tipp után 5 · magyarázat után 2 · a helyes alak beírása +1 · sorozatbónusz +3 a 3. egymás utáni elsőre jótól · hibából tanulás +3 · segítség (pl. súgólépés) −3 (legalább 2). Rossz válaszért nincs levonás. A ranghatárok (0–9000) is közösek.
 
 ## A keret átvitele az appokba
 
@@ -72,11 +77,14 @@ node tools/keret-masolas.mjs ../Felvételi_matek
 node tools/keret-masolas.mjs ../Massalhangzok
 ```
 
-A szkript átmásolja a `js/core`, `js/shell`, `css/style.css` és `tests/keret.test.mjs` fájlokat, és megírja az app `KERET_VERZIO` fájlját (verzió, commit, ujjlenyomat). Az app `tests/keret.test.mjs` tesztje jelzi, ha valaki kézzel átírta a másolatot. Ellenőrzés másolás nélkül: `node tools/keret-masolas.mjs ../Massalhangzok --check`.
+A szkript átmásolja a `js/core`, `js/shell`, `css/style.css` és `tests/keret.test.mjs` fájlokat (az `index.html`-t nem), és megírja az app `KERET_VERZIO` fájlját (verzió, commit, ujjlenyomat). Az app `tests/keret.test.mjs` tesztje jelzi, ha valaki kézzel átírta a másolatot. Ellenőrzés másolás nélkül: `node tools/keret-masolas.mjs ../Massalhangzok --check`.
 
 ## Tesztek
 
 ```bash
 node tests/alap.test.mjs     # pontozás, napi cél, ismétlés, események, szinkron, minta csomag, játékfüggetlenség
-node tests/cloud.test.mjs    # két eszköz ál-Firebase-szel: részleges mentés, összefésülés, régi eszköz, törlés
+node tests/cloud.test.mjs    # két eszköz ál-Firebase-szel: részleges mentés, összefésülés, régi eszköz, törlés, szerverkiesés
+node tests/retry.test.mjs    # az újrapróbálkozás lépcsője álidőzítővel
 ```
+
+A `tests/keret.test.mjs` az appokban fut (a másolat érintetlenségét nézi); itt, a keret-repóban kihagyja az ellenőrzést.
