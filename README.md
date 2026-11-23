@@ -53,7 +53,8 @@ A váz minden játékban ugyanúgy néz ki és működik; játékonként csak az
   newUser(), normUser(u),                                          // a gyerek csomag-saját mezői
   status(u, id) → { stars, level, label }, levelOf(u, id),
   plan(u, n, rng, nyitottTémák) → [{ topic, sub }],                 // a napi küldetés terve (témazárral)
-  makeTask(item, rng, u) → Task, record(u, task, r) → { text, confetti } | null,
+  makeTask(item, rng, u) → Task, record(u, task, r) → { text?, confetti?, gather?: { key, n } } | null,
+  gatherText?: { kulcs: db => szöveg },                              // a gather-események összesítve a kör végén (pl. „🃏 3 új szókártya”)
   speechText(html), badges: [...], metrics: { kulcs: { label, value(u) } },
   help(id), topicLabel(id), subLabel(id, sub), parentTopics(box, u), collectionTabs: [...], coming?: [...],
   retype?: true,                                                   // kér-e a csomag „írd le a helyes alakot” lépést
