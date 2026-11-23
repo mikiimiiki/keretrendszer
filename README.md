@@ -28,6 +28,18 @@ Erre épül: **Matek Űrkaland** (felvételi felkészítő), **Helyesírás Kala
 
 „Minden feladat után” és „Főmenübe lépéskor” módban, ha egy mentés vagy letöltés nem sikerül, lépcsőzetesen próbálkozik újra (`js/core/retry.js`): 3× 15 mp-enként → 3× percenként → 3× 5 percenként → utána 15 percenként, amíg az app nyitva van. Csak akkor, ha van várakozó adat, és csak előtérben (háttérbe kerüléskor kivár, előtérbe kerüléskor azonnal próbál). Közben a gyerek válaszai nem indítanak külön próbát, csak gyűlnek (📴 · N vár); a felhőjelző buborékja mutatja, mikor jön a következő próba. Azonnali próba, a lépcső előről: ha a böngésző jelzi, hogy visszajött a net (`online`), vagy a ☁️ ablakban „Mentés most” / „Újrakapcsolódás”. A naplóba csak a fordulópontok kerülnek (első hiba, lépcsőváltás, helyreállás). Folyamatos módban a Firebase saját újrakapcsolódása dolgozik. Tesztek: `tests/retry.test.mjs`, `tests/cloud.test.mjs`.
 
+## Biztonságos helyi mentés (próba, eszközönként bekapcsolható)
+
+Alapból kikapcsolt – ilyenkor a régi helyi mentés fut. Bekapcsolás eszközönként: `?helyimentes=be` a címben (vissza: `?helyimentes=ki`), vagy a ⚙️ → Felhő fülön. A mentés formátuma és kulcsa nem változik, ezért oda-vissza kapcsolható. Bekapcsolva (`js/core/local-save.js`, `js/core/tab-lease.js`, `js/shell/local-save-ui.js`):
+
+- mentés előtt alapszerkezet-ellenőrzés, írás után visszaolvasás; az előző mentés megmarad (`<kulcs>__previous_v1`);
+- írási hiba (pl. tele a tárhely): piros sáv, a legújabb állapot függőben marad, lépcsőzetes újrapróbálás – rendben működés közben nincs sáv;
+- **egy aktív lap:** az újonnan megnyitott lap átveszi a mentést, a régi lezárul („A játék egy másik lapon fut · Átveszem itt”), és sem helyben, sem a felhőbe nem ír;
+- **sérült mentés:** a játék nem indul el és semmit nem ír felül; a szülő (az előző mentés PIN-jével) visszaállíthat az előző mentésből vagy indulhat üresen (a felhős család újra letölti); a nyers eredeti megmarad (`<kulcs>__corrupt_v1`) és letölthető;
+- a mentés letöltése (JSON) a ⚙️ → Felhő fülön, PIN mögött.
+
+Korlát: a localStorage több lap között nem zárolható atomikusan – két, ugyanabban a pillanatban induló lap közül az utolsó nyer. Két eszköz között a felhőszinkron a megszokott módon fésül össze. Tesztek: `tests/local-save.test.mjs`.
+
 ## Egységes kinézet
 
 A váz minden játékban ugyanúgy néz ki és működik; játékonként csak az tér el, aminek muszáj (téma, szövegek a `GAME.texts`-ben, ranglétra, tárgyak, feladatcsomag). Például: a felhőjelző és a Súgó gomb a felső sávban csak ikon (online kapcsolatnál 📡), a 🎒 Gyűjtemény ablaknak nincs külön címe, a tárgyak füle „Gyűjteményem”, a szinkronmód csak a ⚙️ Felhő fülön látszik, a kör végi gomb ragja a hangrend szerint igazodik („Vissza a főmenüre / térképre”).
@@ -96,6 +108,7 @@ A visszaállítás csak üres vagy új mappába ír (`--felulir`: meglévőbe is
 node tests/alap.test.mjs     # pontozás, napi cél, ismétlés, események, szinkron, minta csomag, játékfüggetlenség
 node tests/cloud.test.mjs    # két eszköz ál-Firebase-szel: részleges mentés, összefésülés, régi eszköz, törlés, szerverkiesés
 node tests/retry.test.mjs    # az újrapróbálkozás lépcsője álidőzítővel
+node tests/local-save.test.mjs  # biztonságos helyi mentés, sérült mentés, egy aktív lap
 ```
 
 A `tests/keret.test.mjs` az appokban fut (a másolat érintetlenségét nézi); itt, a keret-repóban kihagyja az ellenőrzést.
