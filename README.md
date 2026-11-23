@@ -28,9 +28,9 @@ Erre épül: **Matek Űrkaland** (felvételi felkészítő), **Helyesírás Kala
 
 „Minden feladat után” és „Főmenübe lépéskor” módban, ha egy mentés vagy letöltés nem sikerül, lépcsőzetesen próbálkozik újra (`js/core/retry.js`): 3× 15 mp-enként → 3× percenként → 3× 5 percenként → utána 15 percenként, amíg az app nyitva van. Csak akkor, ha van várakozó adat, és csak előtérben (háttérbe kerüléskor kivár, előtérbe kerüléskor azonnal próbál). Közben a gyerek válaszai nem indítanak külön próbát, csak gyűlnek (📴 · N vár); a felhőjelző buborékja mutatja, mikor jön a következő próba. Azonnali próba, a lépcső előről: ha a böngésző jelzi, hogy visszajött a net (`online`), vagy a ☁️ ablakban „Mentés most” / „Újrakapcsolódás”. A naplóba csak a fordulópontok kerülnek (első hiba, lépcsőváltás, helyreállás). Folyamatos módban a Firebase saját újrakapcsolódása dolgozik. Tesztek: `tests/retry.test.mjs`, `tests/cloud.test.mjs`.
 
-## Biztonságos helyi mentés (próba, eszközönként bekapcsolható)
+## Biztonságos helyi mentés
 
-Alapból kikapcsolt – ilyenkor a régi helyi mentés fut. Bekapcsolás eszközönként: `?helyimentes=be` a címben (vissza: `?helyimentes=ki`), vagy a ⚙️ → Felhő fülön. A mentés formátuma és kulcsa nem változik, ezért oda-vissza kapcsolható. Bekapcsolva (`js/core/local-save.js`, `js/core/tab-lease.js`, `js/shell/local-save-ui.js`):
+Mindig ez fut (ha a böngésző letiltja a tárolást, a régi egyszerű mentés). A mentés formátuma és kulcsa a régi. Részei (`js/core/local-save.js`, `js/core/tab-lease.js`, `js/shell/local-save-ui.js`):
 
 - mentés előtt alapszerkezet-ellenőrzés, írás után visszaolvasás; az előző mentés megmarad (`<kulcs>__previous_v1`);
 - írási hiba (pl. tele a tárhely): piros sáv, a legújabb állapot függőben marad, lépcsőzetes újrapróbálás – rendben működés közben nincs sáv;
