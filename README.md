@@ -28,6 +28,10 @@ Erre épül: **Matek Űrkaland** (felvételi felkészítő), **Helyesírás Kala
 
 „Minden feladat után” és „Főmenübe lépéskor” módban, ha egy mentés vagy letöltés nem sikerül, lépcsőzetesen próbálkozik újra (`js/core/retry.js`): 3× 15 mp-enként → 3× percenként → 3× 5 percenként → utána 15 percenként, amíg az app nyitva van. Csak akkor, ha van várakozó adat, és csak előtérben (háttérbe kerüléskor kivár, előtérbe kerüléskor azonnal próbál). Közben a gyerek válaszai nem indítanak külön próbát, csak gyűlnek (📴 · N vár); a felhőjelző buborékja mutatja, mikor jön a következő próba. Azonnali próba, a lépcső előről: ha a böngésző jelzi, hogy visszajött a net (`online`), vagy a ☁️ ablakban „Mentés most” / „Újrakapcsolódás”. A naplóba csak a fordulópontok kerülnek (első hiba, lépcsőváltás, helyreállás). Folyamatos módban a Firebase saját újrakapcsolódása dolgozik. Tesztek: `tests/retry.test.mjs`, `tests/cloud.test.mjs`.
 
+## Tananyagcsatlakozó (új tananyag a vázhoz)
+
+Kis kötelező PACK-szerződés (`contractVersion: 1`, `version`, `id`, `topics`, `makeTask`), a többi alapértékkel; a régi, `contractVersion` nélküli csomagok átmenetileg változatlanul futnak. Leírás: `docs/tananyagcsatlakozo.md`, minta: `examples/minimal-pack/index.js` (`js/core/pack-contract.js`).
+
 ## Biztonságos helyi mentés
 
 Mindig ez fut (ha a böngésző letiltja a tárolást, a régi egyszerű mentés). A mentés formátuma és kulcsa a régi. Részei (`js/core/local-save.js`, `js/core/tab-lease.js`, `js/shell/local-save-ui.js`):
@@ -110,6 +114,8 @@ node tests/alap.test.mjs     # pontozás, napi cél, ismétlés, események, szi
 node tests/cloud.test.mjs    # két eszköz ál-Firebase-szel: részleges mentés, összefésülés, régi eszköz, törlés, szerverkiesés
 node tests/retry.test.mjs    # az újrapróbálkozás lépcsője álidőzítővel
 node tests/local-save.test.mjs  # biztonságos helyi mentés, sérült mentés, egy aktív lap
+node tests/pack-contract.test.mjs  # tananyagcsatlakozó: kötelező mezők, alapértékek, lezárás, egyszeri rögzítés
+node tools/tesztek.mjs [../app]   # az összes teszt egyben (a keretben vagy egy appban)
 ```
 
 A `tests/keret.test.mjs` az appokban fut (a másolat érintetlenségét nézi); itt, a keret-repóban kihagyja az ellenőrzést.

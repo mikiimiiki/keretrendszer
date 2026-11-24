@@ -1,0 +1,35 @@
+✓ egységes pontozás: 10 / +5 a 3. szinten / 5 / 2
+✓ sorozatbónusz és segítség-levonás
+✓ beírás: a magyarázat 2 pontja + 1 = 3
+✓ beírás: kis/nagybetű és szélső szóköz mindegy
+✓ beírás: a szétbontott ékezet (iPad) is jó
+✓ beírás: az ékezet és a hosszú mássalhangzó számít, eltérésnél piros
+✓ beírás: a +1 a pontba és a napi összesítőbe is bekerül
+✓ beírás: a beállítás csak beírást kérő csomagnál látszik, alapból kötelező
+✓ súgó: a végeredményt nem mutatja (n−1 lépés), legalább 1
+✓ súgó: két egymás utáni végignyomás → eggyel kevesebb lépés
+✓ súgó: súgó nélküli feladat megszakítja a végignyomás-sorozatot
+✓ súgó: részleges használat nem csökkent
+✓ súgó: legfeljebb 1 lépésig csökken
+✓ súgó: a csökkentésnek van alsó határa
+✓ súgó: 3 súgó nélküli feladat → visszajön egy lépés
+✓ súgó: 5 súgó nélküli feladat → visszajön minden
+✓ súgó: súgóhasználat újraindítja a számolást
+✓ súgó: témánként külön állapot
+✓ súgó: a beállítás csak a súgót kérő csomagnál látszik, alapból be
+✓ küldetés → sorozat
+✓ egy kihagyott nap: a heti pajzs véd
+✓ a napi nagy cél megvan → ajándék jár
+✓ előleg + szorzó
+✓ Leitner: esedékesen jó → 3 nap múlva
+✓ eseménytartományok (évváltás is)
+✓ egyszeri esemény jutalma
+✓ részleges szinkron: diff és apply
+✓ háromutas összefésülés: a másik eszköz változása is megmarad
+✓ minta csomag: minden feladat elfogadja a jó választ, elutasítja a rosszat, van tipp és magyarázat
+✓ témazár a küldetéstervben
+✓ a csomag minden kötelező mezője megvan
+✓ felhasználó-alapséma és csomag-beállítások
+✓ a js/core és js/shell nem hivatkozik konkrét játékra
+
+✓ Minden teszt rendben

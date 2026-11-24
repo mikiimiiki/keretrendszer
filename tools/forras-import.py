@@ -15,6 +15,11 @@
 # fájlt ellenőrzi, csak utána ír. A sorvégek LF-ek lesznek; a git (core.autocrlf) ezt a megszokott módon kezeli.
 import os, re, sys
 
+try:  # Windows-konzol: a ✓ és az ékezetek ne okozzanak hibát a kiírásnál
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace"); sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 # „# út” + üres sor + nyitó keret (legalább 3 backtick) + nyelv + tartalom + ugyanolyan hosszú záró keret
 BLOCK = re.compile(r"^# (?P<path>[^\n]+)\n\n(?P<fence>`{3,})[^\n`]*\n(?P<body>.*?)\n(?P=fence)[ \t]*$", re.S | re.M)
 

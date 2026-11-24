@@ -43,6 +43,8 @@ function typingUI(box, correct, io) {
 }
 
 export const PACK = {
+  contractVersion: 1,
+  version: "1.0.0",
   id: "minta-szotanulo",
   topics: TOPICS,
   levels: { count: 3, mode: "manual" },

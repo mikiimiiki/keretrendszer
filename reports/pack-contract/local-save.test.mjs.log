@@ -1,0 +1,23 @@
+✓ üres tároló: üres kezdőállapot
+✓ hibás JSON, hibás szerkezet, negatív pont: elutasítva
+✓ hibás mezőtípus: elutasítva
+✓ mentés: ugyanaz a JSON ugyanazon a kulcson
+✓ első mentésnél nincs előző
+✓ a következő mentés előtt az előző megmarad
+✓ állapot: mentve, időponttal
+✓ hibás memóriabeli állapot: nem írja ki, a régi mentés marad
+✓ tele tárhely: hibajelzés, függőben marad, újrapróbálás ütemezve
+✓ a hiba alatt a korábbi mentés ép marad
+✓ újrapróbálás után a legújabb állapot mentve
+✓ sérült mentés: betöltés megáll, az ép előző és a szülői PIN elérhető
+✓ betöltéskor semmit nem ír felül
+✓ visszaállítás: az előző mentésből, a sérült eredeti külön kulcson megmarad
+✓ előző nélkül: indulás üresen, a sérült eredeti megmarad
+✓ sérült előző mentést nem ajánl fel
+✓ az új lap a friss mentésből indul
+✓ a régi lap észreveszi az átvételt (egyszer)
+✓ a régi lap írása elutasítva – nem írja felül az újat
+✓ az új lap ír
+✓ „Átveszem itt”: a régi lap újra aktív, az új lesz inaktív
+
+✓ Minden teszt rendben
