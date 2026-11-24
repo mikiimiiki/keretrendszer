@@ -1,2 +1,5 @@
 node_modules/
 .DS_Store
+
+# a tools/tesztek.mjs naplói
+reports/
