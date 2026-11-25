@@ -1,4 +1,4 @@
-// Egységes tesztindító: a mappa összes tests/*.test.mjs fájlja, mindegyik külön folyamatban. Használat: node tools/tesztek.mjs [app mappa]
+// Egységes tesztindító: a mappa összes tests/*.test.mjs fájlja, mindegyik külön folyamatban, végül a tananyag-ellenőrző. Használat: node tools/tesztek.mjs [app mappa]
 import {readdirSync,mkdirSync,writeFileSync} from 'node:fs';
 import {resolve,dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -12,5 +12,11 @@ for(const name of readdirSync(join(root,'tests')).filter(n=>n.endsWith('.test.mj
  results.push({test:name,status:r.status===0&&!r.error?'PASS':'FAIL',exitCode:r.status});
  console.log(results.at(-1).status+' '+name);
 }
+// végül a tananyag-ellenőrző (tools/pack-ellenorzes.mjs) ugyanerre a mappára
+{const tool=join(dirname(fileURLToPath(import.meta.url)),'pack-ellenorzes.mjs');
+ const r=spawnSync(process.execPath,[tool,root],{cwd:root,encoding:'utf8',timeout:300000,maxBuffer:16*1024*1024});
+ writeFileSync(join(reports,'pack-ellenorzes.log'),(r.stdout||'')+(r.stderr||'')+(r.error?.stack||''));
+ results.push({test:'pack-ellenorzes',status:r.status===0&&!r.error?'PASS':'FAIL',exitCode:r.status});
+ console.log(results.at(-1).status+' pack-ellenorzes'+(r.status===0?'':'\n'+(r.stdout||'')+(r.stderr||'')));}
 writeFileSync(join(reports,'results.json'),JSON.stringify(results,null,2)+'\n');
 process.exitCode=results.some(r=>r.status==='FAIL')?1:0;

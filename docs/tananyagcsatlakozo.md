@@ -100,15 +100,18 @@ Ismeretlen explicit szerződésverzió érthető fejlesztői hibát ad.
 
 A feladat kötelező mezői:
 - q: a feladat HTML-szövege (megbízható tananyagkód, nem külső felhasználói HTML)
-- correctText: a helyes válasz megjeleníthető szövege
-- check(value): {ok: boolean, feedback?: string}
-- render(box,io): a meglévő speciális felületet visszaadó függvény
+- a felület: vagy egy felületleírás (`answer: { kind, … }`, 1.10.0), vagy `render(box,io)`
+- az ellenőrzés: vagy `check(value)` → `{ok: boolean, feedback?: string}`, vagy egy megoldás
+  (`solution`, illetve a felületleírás `correct` / `word` mezője), amelyhez a keret hasonlít
+- correctText: a helyes válasz megjeleníthető szövege – megoldásnál elhagyható, abból készül
 
-A felület read, markWrong, markRight, lock, showCorrect metódusai szükségesek;
-onKey opcionális. A read null-t adjon üres válasznál. A felület nem dönti el,
-hogy milyen ékezet, kisbetű vagy számformátum helyes: ezt a check végzi.
-A közös standard választó/szöveg/szám felületek a következő, 5. ütem részei;
-itt még szándékosan a meglévő render szerződést használjuk.
+A saját felület vezérlőjéből csak a read kötelező (üres válasznál null). A markWrong,
+markRight, lock, showCorrect, dispose és onKey elhagyható: ha hiányzik, a keret kihagyja,
+ha hibát dob, a konzolra írja, és a kör folytatódik. A felület nem dönti el, milyen ékezet,
+kisbetű vagy számformátum helyes: ezt a check, illetve a normalize / normalizeAnswer végzi.
+A részleteket és a példákat a README „Közös válaszadó felületek és felületleírás” része írja le.
+
+Élesítés előtt: `node tools/pack-ellenorzes.mjs ../app` (a `tools/tesztek.mjs` is futtatja).
 
 Kész alapértelmezések: körtervezés a nyitott témákból, üres saját játékosadat,
 változatlan normUser, no-op csomag-record, alap státusz/súgó/feliratok, üres

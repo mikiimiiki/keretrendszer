@@ -6,4 +6,5 @@ export const WORDS = [
   { de: "Apfel", art: "der", hu: "alma" }, { de: "Milch", art: "die", hu: "tej" }, { de: "Brot", art: "das", hu: "kenyér" },
   { de: "Vogel", art: "der", hu: "madár" }, { de: "Sonne", art: "die", hu: "nap (égitest)" }, { de: "Kind", art: "das", hu: "gyerek" },
   { de: "Stuhl", art: "der", hu: "szék" }, { de: "Tür", art: "die", hu: "ajtó" }, { de: "Fenster", art: "das", hu: "ablak" },
+  { de: "Mädchen", art: "das", hu: "lány" }, { de: "Straße", art: "die", hu: "utca" },
 ];

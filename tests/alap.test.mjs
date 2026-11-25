@@ -8,6 +8,7 @@ import { setToday, keyToDay } from "../js/core/dates.js";
 import { inRange, claimOnce } from "../js/core/events.js";
 import { diff, merge, apply, stable } from "../js/core/syncdiff.js";
 import { makeRng } from "../js/core/rng.js";
+import { normalizePack } from "../js/core/pack-contract.js";
 import { newUser, normUser } from "../js/shell/user.js";
 import { settingsDefs } from "../js/shell/settings-defs.js";
 import { shCap, shEnd, shState } from "../js/core/stephelp.js";
@@ -71,8 +72,8 @@ ok(inRange("12-01", "01-06", D("2027-01-03")) && !inRange("2026-12-06", "2026-12
 }
 // a minta csomag megfelel a szerződésnek
 {
-  const rng = makeRng(3), u = PACK.normUser(newUser("B", "🦊", PACK)); let bad = 0;
-  PACK.topics.forEach(T => { for (let i = 0; i < 100; i++) { const t = PACK.makeTask({ topic: T.id, sub: null }, rng, u); if (!t.check(t.solution).ok || t.check("@@@").ok || !t.hint || !t.steps.length || !t.meta) bad++; } });
+  const rng = makeRng(3), u = PACK.normUser(newUser("B", "🦊", PACK)), NP = normalizePack(PACK); let bad = 0;
+  PACK.topics.forEach(T => { for (let i = 0; i < 100; i++) { const t = NP.makeTask({ topic: T.id, sub: null }, rng, u); if (!t.check(t.solution).ok || t.check("@@@").ok || !t.hint || !t.steps.length || !t.meta) bad++; } });
   ok(!bad, "minta csomag: minden feladat elfogadja a jó választ, elutasítja a rosszat, van tipp és magyarázat");
   ok(PACK.plan(u, 6, rng, ["nevelo"]).every(p => p.topic === "nevelo"), "témazár a küldetéstervben");
   const need = ["topics", "newUser", "normUser", "status", "levelOf", "plan", "makeTask", "record", "badges", "metrics", "help", "topicLabel", "subLabel", "parentTopics", "collectionTabs"];

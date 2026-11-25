@@ -16,6 +16,26 @@ Erre épül: **Matek Űrkaland** (felvételi felkészítő), **Helyesírás Kala
 | `js/pack/` | A feladatcsomag (PACK) | játékonként |
 | `js/main.js` | `startShell({ game: GAME, pack: PACK })` | játékonként |
 
+## Közös válaszadó felületek és felületleírás (1.10.0)
+
+Egy új tananyag felületi kód nélkül is elkészülhet: a feladat egy rövid **felületleírást** ad (`answer`), a keret választja hozzá a közös felületet, és – ha nincs saját `check` – a megoldáshoz (`solution`, vagy a leírás `correct` / `word` mezője) hasonlít.
+
+```javascript
+{ q: "<b>der, die vagy das?</b> … Haus", answer: { kind: "choice", options: ["der", "die", "das"], correct: "das" } }
+{ q: "Írd le németül: lány", answer: { kind: "text", correct: "Mädchen", extraKeys: GERMAN_KEYS }, speechLang: "de-DE" }
+{ q: "Mennyi 3 + 4?", answer: { kind: "number", correct: 7 } }
+{ q: "Rakd ki: utca", answer: { kind: "tiles", word: "Straße", clueText: "utca" } }
+```
+
+- Fajták: `choice` (választós, 1–4 billentyű), `text` (szöveg; `extraKeys`: különleges betűk gombsora, pl. `GERMAN_KEYS` = ä ö ü ß Ä Ö Ü), `number` (szám, tizedesvesszővel is), `tiles` (Betűkirakó; `clueText`, `isVowel`, `arrange` elhagyható).
+- Alapértelmezett összevetés: Unicode-egységesítés, szélső szóközök levágása, belső szóközök összevonása; kis- és nagybetű, ékezet számít. Saját szabály: `task.normalize` vagy a csomag `normalizeAnswer` függvénye. Több jó válasz: `solution: ["colour", "color"]`.
+- `speechLang` (pl. `"de-DE"`): a feladat felolvasásának nyelve; alapból a játék nyelve.
+- Saját felület továbbra is adható: `render(box, io)` → vezérlő. **Csak a `read()` kötelező**; a `markWrong`, `markRight`, `lock`, `showCorrect`, `dispose`, `onKey` elhagyható – ha hiányzik, a keret kihagyja, ha hibát dob, a konzolra írja, a kör, a pont és a mentés nem sérül. Ha a `read()` hiányzik vagy hibát dob, a feladat eredmény nélkül zárul.
+- Az `io`: `submit()` (válasz közben ellenőrzés, utána Tovább – csak a saját, még aktív feladaton), `answering()`, `signal` (eseményfigyelők automatikus leiratkozásához), `focus(node)`, `toast()`, `useHelp()`.
+- A közös felületek közvetlenül is hívhatók saját `render`-ből: `choiceUI`, `textUI`, `numberUI` (`js/core/answer-ui.js`), `tilesUI` (`js/core/tile-ui.js`).
+
+**Tananyag-ellenőrző:** `node tools/pack-ellenorzes.mjs [../app]` minden témából és szintről sok feladatot készít, és megnézi, hogy megfelelnek-e a szerződésnek, elfogadják-e a saját megoldásukat, elutasítanak-e egy biztosan rossz választ, és a felületük szimulált oldalon hiba nélkül elkészül-e. A `tools/tesztek.mjs` is lefuttatja. Böngészős és iPades próbát nem helyettesít.
+
 ## Új játék (pl. német gyakorló)
 
 1. Hozz létre egy új repót, és másold bele ennek a repónak a tartalmát (vagy indítsd a mintából).
@@ -114,8 +134,10 @@ node tests/alap.test.mjs     # pontozás, napi cél, ismétlés, események, szi
 node tests/cloud.test.mjs    # két eszköz ál-Firebase-szel: részleges mentés, összefésülés, régi eszköz, törlés, szerverkiesés
 node tests/retry.test.mjs    # az újrapróbálkozás lépcsője álidőzítővel
 node tests/local-save.test.mjs  # biztonságos helyi mentés, sérült mentés, egy aktív lap
-node tests/pack-contract.test.mjs  # tananyagcsatlakozó: kötelező mezők, alapértékek, lezárás, egyszeri rögzítés
-node tools/tesztek.mjs [../app]   # az összes teszt egyben (a keretben vagy egy appban)
+node tests/pack-contract.test.mjs  # tananyagcsatlakozó: kötelező mezők, alapértékek, felületleírás, lezárás, egyszeri rögzítés
+node --test tests/answer-ui.test.mjs tests/tile-ui.test.mjs  # közös válaszadó felületek és Betűkirakó (szimulált DOM)
+node tools/pack-ellenorzes.mjs [../app]   # tananyag-ellenőrző
+node tools/tesztek.mjs [../app]   # az összes teszt és a tananyag-ellenőrző egyben (a keretben vagy egy appban)
 ```
 
 A `tests/keret.test.mjs` az appokban fut (a másolat érintetlenségét nézi); itt, a keret-repóban kihagyja az ellenőrzést.
