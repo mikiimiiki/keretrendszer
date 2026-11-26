@@ -139,7 +139,22 @@ node tests/local-save.test.mjs  # biztonságos helyi mentés, sérült mentés, 
 node tests/pack-contract.test.mjs  # tananyagcsatlakozó: kötelező mezők, alapértékek, felületleírás, lezárás, egyszeri rögzítés
 node --test tests/answer-ui.test.mjs tests/tile-ui.test.mjs  # közös válaszadó felületek és Betűkirakó (szimulált DOM)
 node tools/pack-ellenorzes.mjs [../app]   # tananyag-ellenőrző
+node tests/jatekos-bovitesek.test.mjs  # ajánlatok, kör folytatása, fejlődésjelzés, Saját sarkom (szimulált DOM)
 node tools/tesztek.mjs [../app]   # az összes teszt és a tananyag-ellenőrző egyben (a keretben vagy egy appban)
 ```
 
 A `tests/keret.test.mjs` az appokban fut (a másolat érintetlenségét nézi); itt, a keret-repóban kihagyja az ellenőrzést.
+
+## Játékos bővítések (1.11.0)
+
+Mind a keretben van, egy új tananyag külön kód nélkül megkapja (a fejlődésjelzéshez legfeljebb egy `progressKey` sor kell).
+
+- **„Neked ajánljuk” kártya** a kezdőlapon – csak akkor látszik, ha van mit ajánlani, legfeljebb két sorral:
+  - **▶ Folytatod a kört?** – a félbehagyott kör (kilépés, bezárt lap) aznap, ugyanott folytatható. Az állás a gyerek mentésében van (`u.resume`, minden válasz után frissül, a kör végén törlődik); a már megoldott feladatok nem számolódnak újra.
+  - **🩹 Javító küldetés** – ha a nyitott témákban van ismétlendő feladat (darabszámmal). Ez váltja ki a régi „Ismétlő kör” témakártyát; a deklarált tartalékág (pl. betűkirakó) itt is ugyanúgy működik. Ehhez a `review.count(u, allowed)` a nyitott témákban ténylegesen ismételhető elemeket számolja (allowed nélkül az összeset).
+  - **🎯 Gyakorold ezt** – ha nincs mit javítani: a nyitott témák közül az, amelyikben az utolsó 14 napban a legrosszabb az elsőre jó arány (legalább 6 feladat, 85% alatt).
+- **🌱 Fejlődésjelzés:** ha egy korábban elrontott vagy segítséggel megoldott feladat később elsőre, segítség nélkül sikerül, a dicséret helyén „🌱 Fejlődtél!” jelenik meg (pont, jelvény, szint nem jár érte). A szülő a ⚙️ → Fejlődés fülön látja a 7 és 30 napos darabszámot (`u.days[nap].imp`).
+  - Mi számít ugyanannak a feladatnak: a csomag `progressKey(task)` függvénye (pl. Helyesírás: a szó, bármelyik feladattípusban; Matek: típus, altípus, szint, kezdőérték; német minta: téma és szó). Nélküle a pontos egyezés (kérdés, megoldás, válaszlehetőségek – felületleírásnál magától, saját felületnél `identityParams`-szal).
+  - A mentésbe és a felhőbe csak rövid ujjlenyomat kerül (`u.learningDifficulties`, legfeljebb 100 db, együtt ~1 KB). Díjmentes tipp (pl. a Betűkirakó „Jelentés” gombja): `io.useLearningAid?.()` – ez is „segítségnek” számít a jelzésnél, de pontot nem von le.
+  - A tananyag-ellenőrző figyelmeztet, ha egy témánál a feladat nem azonosítható, vagy ugyanaz a feladat újra más kulcsot kap (akkor a jelzés ritkán jelenne meg).
+- **🏠 Saját sarkom:** a Gyűjtemény új fülén a kinyitott tárgyak közül hármat kitehet a gyerek – koppintással (tárgy → hely, vagy hely → tárgy), a ✕ leveszi. A kezdőlapon egy kis sor mutatja a három tárgyat. Csak az elrendezés mentődik (`u.room`: 3 tárgyazonosító, üres hely = `""`); a gyűjtemény és a felszerelés nem változik.

@@ -71,6 +71,8 @@ export const PACK = {
       answer: { kind: "choice", options: shuffle([w.hu, ...wrong], rng), correct: w.hu },
       hint: "Mondd ki hangosan! Hasonlít valamelyik magyar vagy angol szóra?", steps: [`${escHtml(w.art)} ${escHtml(w.de)} = <b>${escHtml(w.hu)}</b>`], speech: w.de, speechLang: DE };
   },
+  // 🌱 fejlődésjelzés: ugyanaz a feladat = ugyanaz a téma és szó
+  progressKey: t => `${t.topic}:${t.sub}`,
   // 🔁 ikerfeladat: másik szó (névelőnél ugyanazzal a névelővel), nem az elrontott
   twin(task, item, rng) {
     const w = word(task.sub), pool = WORDS.filter(x => x.de !== task.sub && (task.topic !== "nevelo" || !w || x.art === w.art));
