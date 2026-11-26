@@ -139,7 +139,8 @@ node tests/local-save.test.mjs  # biztonságos helyi mentés, sérült mentés, 
 node tests/pack-contract.test.mjs  # tananyagcsatlakozó: kötelező mezők, alapértékek, felületleírás, lezárás, egyszeri rögzítés
 node --test tests/answer-ui.test.mjs tests/tile-ui.test.mjs  # közös válaszadó felületek és Betűkirakó (szimulált DOM)
 node tools/pack-ellenorzes.mjs [../app]   # tananyag-ellenőrző
-node tests/jatekos-bovitesek.test.mjs  # ajánlatok, kör folytatása, fejlődésjelzés, Saját sarkom (szimulált DOM)
+node tests/jatekos-bovitesek.test.mjs  # ajánlatok, kör folytatása, fejlődésjelzés, Saját sarkom, hang, heti ablak (szimulált DOM)
+node tests/heti-hang.test.mjs          # heti összefoglaló számai, hangjelzés
 node tools/tesztek.mjs [../app]   # az összes teszt és a tananyag-ellenőrző egyben (a keretben vagy egy appban)
 ```
 
@@ -158,3 +159,8 @@ Mind a keretben van, egy új tananyag külön kód nélkül megkapja (a fejlőd�
   - A mentésbe és a felhőbe csak rövid ujjlenyomat kerül (`u.learningDifficulties`, legfeljebb 100 db, együtt ~1 KB). Díjmentes tipp (pl. a Betűkirakó „Jelentés” gombja): `io.useLearningAid?.()` – ez is „segítségnek” számít a jelzésnél, de pontot nem von le.
   - A tananyag-ellenőrző figyelmeztet, ha egy témánál a feladat nem azonosítható, vagy ugyanaz a feladat újra más kulcsot kap (akkor a jelzés ritkán jelenne meg).
 - **🏠 Saját sarkom:** a Gyűjtemény új fülén a kinyitott tárgyak közül hármat kitehet a gyerek – koppintással (tárgy → hely, vagy hely → tárgy), a ✕ leveszi. A kezdőlapon egy kis sor mutatja a három tárgyat. Csak az elrendezés mentődik (`u.room`: 3 tárgyazonosító, üres hely = `""`); a gyűjtemény és a felszerelés nem változik.
+
+## Heti összefoglaló és hangjelzés (1.12.0)
+
+- **📅 Heti összefoglaló** (`js/core/weekly.js`, `js/shell/weekly-ui.js`): az új hét első belépésekor (a hét hétfőn kezdődik) egy kis ablak mutatja a múlt hetet: feladatok, elsőre jó arány, teljesített küldetések, 🌱 fejlődések, a legszorgalmasabb nap, az előző héthez mért változás és a sorozat. Egy héten egyszer jön (`u.weekly.seen`), csak ha a múlt héten volt gyakorlás, és megvárja, hogy a többi induló ablak (ünnep, ajándék, eszköz) bezáruljon. A szülő kikapcsolhatja: ⚙️ → Gyakorlás → „📅 Heti összefoglaló a gyereknek”.
+- **🔔 Hangjelzés** (`js/core/sound.js`): halk, rövid dallam (Web Audio, hangfájl nélkül) jó válaszra, 🌱 fejlődésre, új rangra / ünnepi tárgyra és a teljesített küldetésre. Hibás válaszra nincs hang. Alapból bekapcsolt; a szülő kikapcsolhatja: ⚙️ → Gyakorlás → „🔔 Hangjelzések”. A játék a `GAME.defaults.sound` / `weekly` értékkel más alapértéket adhat.
