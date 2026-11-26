@@ -70,7 +70,7 @@ for (const [, id] of html.matchAll(/\bid="([a-z][\w-]+)"/g)) {
 }
 doc.documentElement = doc.body;
 doc.documentElement.style.setProperty = () => {};
-const { C } = await import("../js/shell/ctx.js");
+const { C, itemIcon } = await import("../js/shell/ctx.js");
 const { renderHome, show } = await import("../js/shell/home.js");
 const { startMission, startReview, startFree, round, goHome, resumeInfo } = await import("../js/shell/play.js");
 const { weakTopic } = await import("../js/shell/home.js");
@@ -125,6 +125,11 @@ assert.equal(weakTopic(child, ["a","b"]).t.id, "b"); assert.equal(weakTopic(chil
 renderHome(); assert.ok(offer(".offer-weak")); assert.match(offer(".offer-weak").textContent, /B/);
 offer(".offer-weak").click(); assert.equal(round().mode, "free"); assert.equal(round().topic, "b"); goHome();
 child.due = true; renderHome(); assert.equal(offer(".offer-weak"), null, "javítandónál a javító ajánlat jön");
+// sorrend: az ajánlat a küldetés alatt, teljesített küldetés után fölötte
+child = profile(); child.due = true; renderHome();
+const order = () => [...doc.body.childNodes].map(n => n.id).filter(x => x === "mission" || x === "home-offers");
+assert.deepEqual(order(), ["mission", "home-offers"]);
+startMission(); submit(2); goHome(); assert.deepEqual(order(), ["home-offers", "mission"]);
 // ▶ félbehagyott kör folytatása: ugyanott folytatódik, a megoldott feladat nem számolódik újra
 child = profile(); startFree("a"); submit(2); io.submit();
 assert.equal(round().idx, 1); goHome();
@@ -146,7 +151,8 @@ assert.match($("side-body").innerHTML, /Fejlődtél/); assert.equal(child.pts-be
 assert.deepEqual(child.badges, previousBadges); assert.equal(improvementsIn(child, dayNum() - 6), 1); goHome();
 // 🏠 Saját sarkom: kis sor a kezdőlapon, koppintós fül a Gyűjteményben
 const id = GAME.ranks.rankItems(child.pts).find(id => GAME.catalog.itemById(id));
-child.owned = [id]; renderHome(); assert.equal($("home-room").hidden, false); assert.ok($("home-room").querySelector(".room-row"));
+child.owned = [id]; renderHome(); assert.equal($("home-room").hidden, true);
+assert.ok($("hero-corner").contains($("mascot")), "a kabala a sarok közepén"); assert.ok($("hero-ped").querySelector(".hc-hint"), "üres sarok: díszítő tipp");
 const mem = new Map(), storage = { getItem:k=>mem.get(k) ?? null, setItem:(k,v)=>mem.set(k,v) };
 const installed = createLocalSave({key:"room-test",storage});
 C.localSave = {active:true, save:installed.save};
@@ -159,6 +165,8 @@ item().click(); slot(0).click(); assert.equal(child.room[0], id);
 slot(2).click(); item().click(); assert.deepEqual(child.room, ["","",id], "áthelyezés: hely → tárgy");
 const reloaded = createLocalSave({key:"room-test",storage}).load();
 assert.ok(reloaded.ok); assert.deepEqual(normUser(reloaded.state.users.Teszt, pack).room,["","",id]);
+renderHome(); assert.equal($("hero-corner").querySelector(".hc-right").textContent, itemIcon(id), "a jobb polcon a kitett figura");
+startFree("a"); assert.match($("side-body").innerHTML, new RegExp(itemIcon(id)), "játék közben a figura a jobb oldali mezőben"); goHome();
 tab.querySelector(".room-off").click(); assert.deepEqual(child.room,["","",""]);
 assert.equal(child.cosmetics, equipBefore);
 globalThis.setTimeout = scheduled;

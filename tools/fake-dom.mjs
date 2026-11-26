@@ -51,6 +51,10 @@ class FakeElement extends EventTarget {
   insertBefore(n, ref) { const a = this._adopt(n), i = ref ? this.childNodes.indexOf(ref) : -1; if (i < 0) this.childNodes.push(a); else this.childNodes.splice(i, 0, a); return n; }
   replaceChildren(...ns) { this.childNodes.forEach(c => { c.parentNode = null; }); this.childNodes = []; this._html = ""; this._text = ""; this.append(...ns); }
   remove() { this.parentNode?._detach(this); }
+  _at(off, ...ns) { const p = this.parentNode; if (!p) return; let i = p.childNodes.indexOf(this) + off; for (const n of ns) { const x = p._adopt(n); i = Math.min(i, p.childNodes.length); p.childNodes.splice(i++, 0, x); } }
+  before(...ns) { this._at(0, ...ns); }
+  after(...ns) { this._at(1, ...ns); }
+  replaceWith(...ns) { const p = this.parentNode; if (!p) return; this.after(...ns); this.remove(); }
   contains(n) { for (let x = n; x; x = x.parentNode) if (x === this) return true; return false; }
   set innerHTML(v) { this.replaceChildren(); this._html = String(v); }
   get innerHTML() { return this._html; }
