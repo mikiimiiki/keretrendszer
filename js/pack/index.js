@@ -71,6 +71,11 @@ export const PACK = {
       answer: { kind: "choice", options: shuffle([w.hu, ...wrong], rng), correct: w.hu },
       hint: "Mondd ki hangosan! Hasonlít valamelyik magyar vagy angol szóra?", steps: [`${escHtml(w.art)} ${escHtml(w.de)} = <b>${escHtml(w.hu)}</b>`], speech: w.de, speechLang: DE };
   },
+  // 🔁 ikerfeladat: másik szó (névelőnél ugyanazzal a névelővel), nem az elrontott
+  twin(task, item, rng) {
+    const w = word(task.sub), pool = WORDS.filter(x => x.de !== task.sub && (task.topic !== "nevelo" || !w || x.art === w.art));
+    return pool.length ? { topic: item.topic, sub: rng.pick(pool).de, level: task.level } : null;
+  },
   // a csomag saját haladása: szónkénti ismétlés (Leitner)
   record(u, task, r) { const k = `${task.topic}:${task.sub}`; srsStep((u.words[k] = u.words[k] || newItem()), r === 1, dayNum()); return null; },
   speechText: html => String(html).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),

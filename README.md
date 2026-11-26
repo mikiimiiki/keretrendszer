@@ -34,6 +34,8 @@ Egy új tananyag felületi kód nélkül is elkészülhet: a feladat egy rövid 
 - Az `io`: `submit()` (válasz közben ellenőrzés, utána Tovább – csak a saját, még aktív feladaton), `answering()`, `signal` (eseményfigyelők automatikus leiratkozásához), `focus(node)`, `toast()`, `useHelp()`.
 - A közös felületek közvetlenül is hívhatók saját `render`-ből: `choiceUI`, `textUI`, `numberUI` (`js/core/answer-ui.js`), `tilesUI` (`js/core/tile-ui.js`).
 
+**Ikerfeladat („🔁 Próbáld ki egy hasonlóval!”):** hibás válasz után a keret egy hasonló feladatot kér a csomagtól. Alapból ugyanazzal a témával és `sub`-bal – ez akkor jó, ha a `sub` feladattípust jelöl (Matek: új számokkal más feladat lesz). Ha a `sub` maga a szó vagy a konkrét feladat, adj meg `twin(task, item, rng, u)` függvényt, amely egy hasonló, de MÁSIK elemet ad (`{ topic, sub, level? }`, vagy `null` = alapértelmezés). Ha az ikerfeladat mégis ugyanaz lenne, mint az elrontott, a keret a témából kér helyette másikat, és a konzolra figyelmeztet; a tananyag-ellenőrző pedig hibát jelez, ha egy témánál az ikerfeladat jellemzően ugyanaz.
+
 **Tananyag-ellenőrző:** `node tools/pack-ellenorzes.mjs [../app]` minden témából és szintről sok feladatot készít, és megnézi, hogy megfelelnek-e a szerződésnek, elfogadják-e a saját megoldásukat, elutasítanak-e egy biztosan rossz választ, és a felületük szimulált oldalon hiba nélkül elkészül-e. A `tools/tesztek.mjs` is lefuttatja. Böngészős és iPades próbát nem helyettesít.
 
 ## Új játék (pl. német gyakorló)

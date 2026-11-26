@@ -3,12 +3,14 @@
 // Minden témából és szintről sok feladatot készít rögzített kezdőértékkel, és ellenőrzi, hogy
 //   – a csomag és a feladatok megfelelnek-e a szerződésnek (kötelező mezők, típusok, felületleírás),
 //   – a feladat elfogadja-e a saját megoldását (solution), és elutasít-e egy biztosan rossz választ,
-//   – a felület elkészül-e szimulált oldalon, van-e read(), és a többi felületi metódus nem dob-e hibát.
+//   – a felület elkészül-e szimulált oldalon, van-e read(), és a többi felületi metódus nem dob-e hibát,
+//   – az ikerfeladat („Próbáld ki egy hasonlóval!”) tényleg MÁSIK feladat-e, nem ugyanaz, mint az elrontott.
 // Hiba esetén 1-es kilépési kóddal áll le (a tools/tesztek.mjs is futtatja). Böngészős próbát nem helyettesít.
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { existsSync } from "node:fs";
 import { installFakeDom } from "./fake-dom.mjs";
+const key = t => `${String(t.q ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()}|${t.correctText}`;
 
 const args = process.argv.slice(2), dbAt = args.indexOf("--db");
 const N = dbAt >= 0 ? Math.max(1, +args[dbAt + 1] || 40) : 40;
@@ -40,6 +42,7 @@ catch (e) { console.error = consoleError; console.log(`✗ A csomag nem felel me
 const freshUser = () => { const u = normUser(newUser("Próba", "", p), p); u.prefs = u.prefs || {}; return u; };
 
 let count = 0;
+const twins = { n: {}, same: {} };
 function inspect(item, seed) {
   const u = freshUser(), rng = makeRng(seed);
   let t;
@@ -56,6 +59,12 @@ function inspect(item, seed) {
     try { t.answerText(t.solution); } catch (e) { note(errors, `answerText hibát dob: ${e.message}`, at); }
   }
   for (const v of WRONG) { try { if (t.check(v).ok) note(errors, "egy biztosan rossz választ is elfogad", at); } catch { /* rossz típusú bevitel: a felület ilyet nem ad */ } }
+  // ikerfeladat: ugyanaz-e, mint az eredeti?
+  twins.n[t.topic] = (twins.n[t.topic] || 0) + 1;
+  try {
+    const it = p.twin(t, item, makeRng(seed + 7777), u), t2 = p.makeTask(it, makeRng(seed + 9999), u);
+    if (key(t2) === key(t)) twins.same[t.topic] = (twins.same[t.topic] || 0) + 1;
+  } catch (e) { note(errors, `ikerfeladat hibát dob: ${e.message}`, at); }
   // felület szimulált oldalon
   const box = dom.box(), ctl = new AbortController(), before = logged.length;
   const io = { submit() {}, answering: () => true, canFocus: () => false, signal: ctl.signal, focus() {}, toast() {}, useHelp() {} };
@@ -82,6 +91,10 @@ for (let i = 0; i < 5; i++) {
   try { p.plan(u, 10, makeRng(i), [one]); } catch (e) { note(errors, `plan a lezárt témákat nem tartja be: ${e.message}`, "plan"); }
 }
 console.error = consoleError;
+for (const [topic, same] of Object.entries(twins.same)) {
+  const n = twins.n[topic], msg = `az ikerfeladat („Próbáld ki egy hasonlóval!”) ugyanaz, mint az elrontott feladat – adj meg PACK.twin-t`;
+  if (same / n >= 0.5) note(errors, msg, `${topic}: ${same}/${n}`); else note(warnings, msg.replace(" – adj meg PACK.twin-t", " (néha)"), `${topic}: ${same}/${n}`);
+}
 
 const show = (map, mark) => [...map].sort((a, b) => b[1].n - a[1].n).forEach(([k, v]) => console.log(`  ${mark} ${k} (${v.n}×, pl. ${v.example})`));
 console.log(`Tananyag-ellenőrzés: ${p.id} ${p.version}${p.legacy ? " (régi szerződés)" : ""} · ${p.topics.length} téma · ${levels} szint · ${count} feladat`);

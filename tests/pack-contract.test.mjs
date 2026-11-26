@@ -38,3 +38,10 @@ test('declared fallback allowed, undeclared fallback rejected',()=>{
  delete raw.topicFallbacks;assert.throws(()=>normalizePack(raw).makeTask({topic:'a'},makeRng(1),{}),/task.topic/);
 });
 test('fallback declaration cannot name an unknown topic',()=>assert.throws(()=>normalizePack({...base(),topicFallbacks:{a:['unknown']}}),/topicFallbacks/));
+test('twin: default keeps topic and sub, custom hook can pick another item, invalid result rejected',()=>{
+ const p=normalizePack(base()),t=p.makeTask({topic:'a',sub:'x'},makeRng(1),{});
+ assert.deepEqual(p.twin(t,{topic:'a'},makeRng(1),{}),{topic:'a',sub:t.sub,level:1,twin:true});
+ const q=normalizePack({...base(),twin:(task,item)=>({topic:item.topic,sub:'y'})});assert.equal(q.twin(t,{topic:'a'},makeRng(1),{}).sub,'y');
+ assert.throws(()=>normalizePack({...base(),twin:()=>({topic:'zz'})}).twin(t,{topic:'a'},makeRng(1),{}),/twin/);
+ assert.throws(()=>normalizePack({...base(),twin:1}),/twin/);
+});
