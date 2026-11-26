@@ -141,6 +141,7 @@ node --test tests/answer-ui.test.mjs tests/tile-ui.test.mjs  # közös válaszad
 node tools/pack-ellenorzes.mjs [../app]   # tananyag-ellenőrző
 node tests/jatekos-bovitesek.test.mjs  # ajánlatok, kör folytatása, fejlődésjelzés, Saját sarkom, hang, heti ablak (szimulált DOM)
 node tests/heti-hang.test.mjs          # heti összefoglaló számai, hangjelzés
+node tests/idojaras.test.mjs           # időjárás alapú hóesés (ál-időjárással), város beállítás
 node tools/tesztek.mjs [../app]   # az összes teszt és a tananyag-ellenőrző egyben (a keretben vagy egy appban)
 ```
 
@@ -164,3 +165,10 @@ Mind a keretben van, egy új tananyag külön kód nélkül megkapja (a fejlőd�
 
 - **📅 Heti összefoglaló** (`js/core/weekly.js`, `js/shell/weekly-ui.js`): az új hét első belépésekor (a hét hétfőn kezdődik) egy kis ablak mutatja a múlt hetet: feladatok, elsőre jó arány, teljesített küldetések, 🌱 fejlődések, a legszorgalmasabb nap, az előző héthez mért változás és a sorozat. Egy héten egyszer jön (`u.weekly.seen`), csak ha a múlt héten volt gyakorlás, és megvárja, hogy a többi induló ablak (ünnep, ajándék, eszköz) bezáruljon. A szülő kikapcsolhatja: ⚙️ → Gyakorlás → „📅 Heti összefoglaló a gyereknek”.
 - **🔔 Hangjelzés** (`js/core/sound.js`): halk, rövid dallam (Web Audio, hangfájl nélkül) jó válaszra, 🌱 fejlődésre, új rangra / ünnepi tárgyra és a teljesített küldetésre. Hibás válaszra nincs hang. Alapból bekapcsolt; a szülő kikapcsolhatja: ⚙️ → Gyakorlás → „🔔 Hangjelzések”. A játék a `GAME.defaults.sound` / `weekly` értékkel más alapértéket adhat.
+
+## Hóesés az időjárás alapján (1.13.0)
+
+- `js/core/weather.js`: naponta egyszer megkérdezi az Open-Meteótól (ingyenes, kulcs nélkül), hogy a beállított városban **aznap havazott-e vagy várható-e havazás** (napi hóösszeg > 0 vagy havazás-kód). Ha igen, egész nap esik a hó a háttérben. A válasz a böngészőben tárolódik (`<storeKey>_weather`: város + nap), így aznap nincs újabb lekérdezés.
+- A város a ⚙️ szülői beállítások „🎄 Ünnepek és időjárás” csoportjában állítható gyerekenként (`city`, alapból **Győr**; a játék a `GAME.defaults.city`-vel mást adhat). Csak a város neve megy ki, pontos helyet nem kérünk.
+- Tartalék: ha nincs adat (nincs internet, ismeretlen város, szimulált nap), a régi naptári szabály dönt (december 1. – január 6., ünnepi eseményekkel). A ❄️ kapcsoló és a csökkentett mozgás továbbra is kikapcsolja.
+- Új beállítástípus: `type: "text"` (`maxLength`, `placeholder`).
