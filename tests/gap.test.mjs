@@ -15,7 +15,7 @@ let t = mk({ kind: "gap", word: "bútor", part: "ú", options: ["ú", "u"] });
 assert.equal(t.solution, "ú"); assert.equal(t.correctText, "ú"); assert.equal(t.check("ú").ok, true); assert.equal(t.check("u").ok, false);
 let root = box(), api = io(), ui = t.render(root, api);
 const word = () => root.querySelector(".gap-word").textContent;
-assert.equal(word(), "b__tor");
+assert.equal(word(), "b tor", "üres hiány: egy betűnyi hely, egy aláhúzás");
 root.querySelectorAll("button.opt").find(b => b.textContent === "u").click();
 assert.equal(ui.read(), "u"); assert.equal(word(), "butor"); assert.equal(api.sent.length, 1);
 ui.markWrong(); assert.ok(root.querySelector(".gap").classList.contains("wrong"));

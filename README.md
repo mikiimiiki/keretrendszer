@@ -170,7 +170,7 @@ Mind a keretben van, egy új tananyag külön kód nélkül megkapja (a fejlőd�
 ## Heti összefoglaló és hangjelzés (1.12.0)
 
 - **📅 Heti összefoglaló** (`js/core/weekly.js`, `js/shell/weekly-ui.js`): az új hét első belépésekor (a hét hétfőn kezdődik) egy kis ablak mutatja a múlt hetet: feladatok, elsőre jó arány, teljesített küldetések, 🌱 fejlődések, a legszorgalmasabb nap, az előző héthez mért változás és a sorozat. Egy héten egyszer jön (`u.weekly.seen`), csak ha a múlt héten volt gyakorlás, és megvárja, hogy a többi induló ablak (ünnep, ajándék, eszköz) bezáruljon. A szülő kikapcsolhatja: ⚙️ → Gyakorlás → „📅 Heti összefoglaló a gyereknek”.
-- **🔔 Hangjelzés** (`js/core/sound.js`): halk, rövid dallam (Web Audio, hangfájl nélkül) jó válaszra, 🌱 fejlődésre, új rangra / ünnepi tárgyra és a teljesített küldetésre. Hibás válaszra nincs hang. Alapból bekapcsolt; a szülő kikapcsolhatja: ⚙️ → Gyakorlás → „🔔 Hangjelzések”. A játék a `GAME.defaults.sound` / `weekly` értékkel más alapértéket adhat.
+- **🔔 Hangjelzés** (`js/core/sound.js`): halk, rövid dallam (Web Audio, hangfájl nélkül) jó válaszra, 🌱 fejlődésre, új rangra / ünnepi tárgyra és a teljesített küldetésre. Hibás válaszra egy halk, lágy, lefelé lépő két hang („hmm, még nem”) – nem büntető. Alapból bekapcsolt; a szülő kikapcsolhatja: ⚙️ → Gyakorlás → „🔔 Hangjelzések”. A játék a `GAME.defaults.sound` / `weekly` értékkel más alapértéket adhat.
 
 ## Hóesés az időjárás alapján (1.13.0)
 
