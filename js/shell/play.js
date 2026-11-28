@@ -20,6 +20,7 @@ import { checkHolidays } from "./holidays.js";
 import { trophyRain, openGifts } from "./goal-ui.js";
 import { maybeAskDevice } from "./players.js";
 import { openHelp, openTopicHelp } from "./help.js";
+import { autoNextOn } from "./settings-defs.js";
 import { coveredBy, uniqueTexts } from "../core/dedupe.js";
 
 let S = null; // aktuális kör
@@ -291,9 +292,11 @@ function explain(v) {
 }
 // a teljes megoldás – az imént már látott szövegek (tipp, „Miért?”) nélkül
 function stepsAll(t, seen = []) { const box = el("div", "steps"); uniqueTexts(t.steps, seen).forEach(s => box.append(el("div", "step", s))); return box; }
-// auto = elsőre jó válasz: 1,5 mp múlva magától továbblép (a gombon egy sáv mutatja az időt)
+// auto = elsőre jó válasz: 1,5 mp múlva magától továbblép (a gombon egy sáv mutatja az időt),
+// hacsak a gyerek beállításában ki nincs kapcsolva („⏩ Jó válasz után magától továbblép”)
 const AUTO_NEXT_MS = 1500;
 function nextButton(auto = false) {
+  auto = auto && autoNextOn(prefs(cur()));
   const last = S.idx >= S.plan.length, t = S.task;
   const go = () => { clearTimeout(S.autoT); nextTask(); };
   const b = btn("primary big" + (auto ? " auto" : ""), last ? "Kész! 🏁" : "Tovább ▶", go);
