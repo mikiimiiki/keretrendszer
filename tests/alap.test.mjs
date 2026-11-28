@@ -10,7 +10,7 @@ import { diff, merge, apply, stable } from "../js/core/syncdiff.js";
 import { makeRng } from "../js/core/rng.js";
 import { normalizePack } from "../js/core/pack-contract.js";
 import { newUser, normUser } from "../js/shell/user.js";
-import { settingsDefs } from "../js/shell/settings-defs.js";
+import { settingsDefs, autoNextOn } from "../js/shell/settings-defs.js";
 import { shCap, shEnd, shState } from "../js/core/stephelp.js";
 globalThis.document = { querySelector: () => null };
 const { PACK } = await import("../js/pack/index.js");
@@ -47,6 +47,9 @@ ok(shCap(4) === 3 && shCap(3) === 2 && shCap(2) === 1 && shCap(1) === 1 && shCap
   ok(shEnd(st, 0, 1) === null && shEnd(st, 0, 1) === "all" && st.cut === 0, "súgó: 5 súgó nélküli feladat → visszajön minden");
   const s2 = { cut: 2, full: 0, free: 2 }; shEnd(s2, 1, 1); ok(s2.free === 0 && shEnd(s2, 0, 1) === null && shEnd(s2, 0, 1) === null && s2.cut === 2, "súgó: súgóhasználat újraindítja a számolást");
   const u = {}; shState(u, "T1").cut = 1; ok(u.stepHelp.T1.cut === 1 && shState(u, "T2").cut === 0, "súgó: témánként külön állapot");
+  { const d = settingsDefs(GAME, {}).find(x => x.key === "autoNext");
+    ok(d && d.type === "toggle" && d.default === true && d.scope === "child" && settingsDefs({ ...GAME, defaults: { ...GAME.defaults, autoNext: false } }, {}).find(x => x.key === "autoNext").default === false, "magától továbblépés: gyerekenkénti kapcsoló, alapból be, a játék alapértéke felülírhatja");
+    ok(autoNextOn({}) && autoNextOn(undefined) && autoNextOn({ autoNext: true }) && !autoNextOn({ autoNext: false }), "magától továbblépés: régi mentésnél be, kikapcsolva nem lép tovább"); }
   ok(settingsDefs(GAME, { stepHelp: true }).some(d => d.key === "stepHelp" && d.default === true) && !settingsDefs(GAME, {}).some(d => d.key === "stepHelp"), "súgó: a beállítás csak a súgót kérő csomagnál látszik, alapból be");
 }
 // napi küldetés, sorozat, nagy cél

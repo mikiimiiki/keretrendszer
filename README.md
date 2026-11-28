@@ -188,3 +188,7 @@ Mind a keretben van, egy új tananyag külön kód nélkül megkapja (a fejlőd�
 ## Felolvasó hang (1.16.0)
 
 A felolvasás alapból **női hangot** választ, ha az eszközön van (`js/core/voices.js`: pl. iPad – Mariska, Chrome – Google magyar, Edge – Noémi). A szülő a ⚙️ → Beállítások fülön, közvetlenül a „🔊 Felolvasás alapból bekapcsolva” alatt („🗣️ Felolvasó hang – ezen az eszközön”) választhat: női hang (automatikus), férfi hang (automatikus) vagy egy konkrét hang a böngésző hangjai közül; ▶ meghallgatható. A választás eszközönként, a böngészőben tárolódik (`<storeKey>_voice`), mert a hangok eszközönként mások. Idegen nyelvű feladatnál (`speechLang`) az adott nyelv hangjai közül választ, szintén női hangot előnyben.
+
+## Magától továbblépés kikapcsolható (1.18.0)
+
+Elsőre jó válasz után a játék 1,5 másodperc múlva magától lép a következő feladatra (a „Tovább ▶” gombon egy sáv mutatja az időt). A szülői Beállítások 🎮 Gyakorlás részében gyerekenként kikapcsolható: „⏩ Jó válasz után magától továbblép” (`autoNext`, alapból be; a játék a `GAME.defaults.autoNext` értékkel másik alapértéket adhat). Kikapcsolva a gyerek a „Tovább ▶” gombbal vagy Enterrel lép tovább, így van ideje elolvasni a „Miért?” sort. A régi mentésekben nincs `autoNext` mező: ott marad a magától továbblépés (`autoNextOn()` a `js/shell/settings-defs.js`-ben).
