@@ -29,13 +29,14 @@ const where = (task, item) => `${task?.topic || item.topic}${item.level ? "/" + 
 const plain = h => String(h ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 const WRONG = ["\u0000biztosan-rossz-válasz", -987654321];
 
-let PACK, normalizePack, makeRng, newUser, normUser, learningKey = null;
+let PACK, normalizePack, makeRng, newUser, normUser, learningKey = null, badLangCodes = null;
 try {
   ({ PACK } = await imp("js/pack/index.js"));
   ({ normalizePack } = await imp("js/core/pack-contract.js"));
   ({ makeRng } = await imp("js/core/rng.js"));
   ({ newUser, normUser } = await imp("js/shell/user.js"));
   try { ({ learningKey } = await imp("js/core/learning-feedback.js")); } catch { /* régebbi keret: nincs fejlődésjelzés */ }
+  try { ({ badLangCodes } = await imp("js/core/lang.js")); } catch { /* régebbi keret: nincs nyelvenkénti felolvasás */ }
 } catch (e) { console.error = consoleError; console.log(`✗ A tananyag nem tölthető be: ${e.message}`); process.exit(1); }
 
 let p;
@@ -53,6 +54,9 @@ function inspect(item, seed) {
   const at = where(t, item);
   if (!plain(t.q)) note(errors, "üres feladatszöveg (q)", at);
   if (!plain(t.correctText)) note(errors, "üres helyes válasz szöveg (correctText)", at);
+  // nyelvjelölés (<span lang="de-DE">): érvényes nyelvkód kell, különben a felolvasó a játék nyelvén mondja
+  if (badLangCodes) for (const [f, h] of [["q", t.q], ["speech", t.speech], ["hint", t.hint], ["rule", t.rule], ...(t.steps || []).map(s => ["steps", s]), ...(Array.isArray(t.helpSteps) ? t.helpSteps : []).map(s => ["helpSteps", s])])
+    for (const l of badLangCodes(h)) note(errors, `érvénytelen nyelvkód a(z) ${f} szövegben: lang="${l}" (pl. "de-DE" kell)`, at);
   if (!plain(t.hint) || t.hint === "Gondold át még egyszer!") note(warnings, "nincs saját tipp (hint)", t.topic);
   if (t.solution === undefined) note(warnings, "nincs megoldás (solution): az ellenőrző nem próbálható ki gépileg", t.topic);
   else {
