@@ -12,7 +12,7 @@ import { fileURLToPath } from "url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DIRS = ["js/core", "js/shell"];
-const SINGLE = ["css/style.css", "tests/keret.test.mjs"];
+const SINGLE = ["css/style.css", "tests/keret.test.mjs", "database.rules.json"];
 
 export function keretFajlok(root = ROOT) {
   return [...DIRS.flatMap(d => readdirSync(join(root, d)).filter(f => f.endsWith(".js")).sort().map(f => `${d}/${f}`)), ...SINGLE];

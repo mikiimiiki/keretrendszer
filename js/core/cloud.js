@@ -9,10 +9,11 @@
 //             a kapcsolat csak a művelet idejére nyílik (utána 30 mp-cel bont)
 //   🏠 home – feltöltés és letöltés csak főmenübe lépéskor, induláskor, a ⚙️ ablak nyitásakor és az oldal elhagyásakor
 // Mindegyik módban: csak a megváltozott mezők mennek fel (core/syncdiff.js), a hibanapló külön ágon van
-// (families/{fam}/logs/{gyerek}), és 5 perc tétlenség vagy háttérbe kerülés után a kapcsolat szünetel.
+// (…/logs/{gyerek}), és 5 perc tétlenség vagy háttérbe kerülés után a kapcsolat szünetel.
 //
-// Felhőszerkezet: families/{fam}/ users/{gyerek} · logs/{gyerek}/{időbélyeg} · settings · parent · deleted ·
-//                 devices/{eszköz} · members   (a szabályok a families/{fam} alatt mindent a tagoknak engednek)
+// Felhőszerkezet: families/{fam}/ members · parent (közös) · apps/{app}/ users/{gyerek} · logs/{gyerek}/{időbélyeg} ·
+//                 settings · deleted · devices/{eszköz}   (a szabályok a families/{fam} alatt mindent a tagoknak engednek)
+//                 api.app (a játék config.js-ének cloudApp mezője) nélkül a játék adatai közvetlenül a families/{fam} alatt vannak.
 import { diff, merge, apply, stable, bytes, clone } from "./syncdiff.js";
 import { guessName, monthKey } from "./device.js";
 import { makeRetry } from "./retry.js";
@@ -62,7 +63,7 @@ function errText(e) {
 }
 
 export function createCloud(api) {
-  // api: { config (Firebase-beállítás), state(), persist(), refresh(), onStatus(status), normUser(u), device, storeKey, onDevice(rec) }
+  // api: { config (Firebase-beállítás), app (felhőág neve, pl. "matek"), state(), persist(), refresh(), onStatus(status), normUser(u), device, storeKey, onDevice(rec) }
   const FIREBASE_CONFIG = api.config || {};
   const dev = api.device;
   let fb = null, db = null, fa = null, auth = null, user = null, member = false, note = "", authKnown = false;
@@ -77,6 +78,12 @@ export function createCloud(api) {
   const sizes = { users: 0, settings: 0, parent: 0, deleted: 0, devices: 0, logs: {} };
   const S = () => api.state();
   const fam = () => (S().familyCode || "").replace(/[^a-z0-9_-]/gi, "");
+  // Közös Firebase-projekt (1.19.0): a játék saját adatai a families/{fam}/apps/{app} ág alá kerülnek,
+  // a tagság (members) és a szülői PIN (parent) családszintű, közös marad. app nélkül: a régi, közvetlen ág.
+  const APP = String(api.app || "").replace(/[^a-z0-9_-]/gi, "");
+  const famPath = () => `families/${fam()}`;
+  const appPath = () => APP ? `families/${fam()}/apps/${APP}` : famPath();
+  const snapId = () => APP ? `${fam()}/${APP}` : fam();
   const me = () => emailKey(user && user.email);
   const ready = () => !!(db && user && member && fam().length >= 6);
   const configured = !!(FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey) || !!api.firebase;
@@ -85,10 +92,10 @@ export function createCloud(api) {
   // ---- Mit tudunk a felhőről (a részleges mentéshez): gyerekenként az utolsó ismert felhőállapot ----
   const SNAP = (api.storeKey || "cloud") + "_sync";
   let snap = (() => { try { return JSON.parse(localStorage.getItem(SNAP) || "null"); } catch { return null; } })() || {};
-  const resetSnap = () => { snap = { fam: fam(), users: {}, logs: {}, legacy: {} }; };
+  const resetSnap = () => { snap = { fam: snapId(), users: {}, logs: {}, legacy: {} }; };
   if (!snap.users) resetSnap();
   const saveSnap = () => { try { localStorage.setItem(SNAP, JSON.stringify(snap)); } catch { /* tele a tárhely: a következő letöltéskor újraépül */ } };
-  const checkSnapFam = () => { if (snap.fam !== fam()) { resetSnap(); saveSnap(); } };
+  const checkSnapFam = () => { if (snap.fam !== snapId()) { resetSnap(); saveSnap(); } };
 
   function log(icon, text, isErr = false) {
     events.push({ t: Date.now(), icon, text, err: isErr });
@@ -288,7 +295,7 @@ export function createCloud(api) {
     Object.values(remote).forEach(r => { if (r && r.name && (r.ts || 0) > (st.deleted[r.name] || 0)) st.deleted[r.name] = r.ts; });
     Object.entries(st.deleted).forEach(([n, ts]) => {
       const r = remote[safeKey(n)];
-      if (!r || (r.ts || 0) < ts) op("törlés jelzése", () => fb.set(fb.ref(db, `families/${fam()}/deleted/${safeKey(n)}`), { name: n, ts })).catch(() => {});
+      if (!r || (r.ts || 0) < ts) op("törlés jelzése", () => fb.set(fb.ref(db, `${appPath()}/deleted/${safeKey(n)}`), { name: n, ts })).catch(() => {});
       if (st.users[n] && (st.users[n].upd || 0) <= ts) { delete st.users[n]; pending.delete(n); gone = true; }
     });
     if (gone) { api.persist(); api.refresh(); }
@@ -341,8 +348,8 @@ export function createCloud(api) {
   }
   function listen() {
     log("🔌", "Kapcsolódás a család adataihoz (folyamatos mód)…");
-    const c = fam(), ref = p => fb.ref(db, `families/${c}/${p}`);
-    unsubs.push(fb.onValue(ref("parent"), s => { const v = s.val(); sizes.parent = countDown(v); applyParent(v); }, onErr("PIN olvasása")));
+    const fp = famPath(), ap = appPath(), ref = p => fb.ref(db, `${ap}/${p}`);
+    unsubs.push(fb.onValue(fb.ref(db, `${fp}/parent`), s => { const v = s.val(); sizes.parent = countDown(v); applyParent(v); }, onErr("PIN olvasása")));
     unsubs.push(fb.onValue(ref("settings"), s => { const v = s.val(); sizes.settings = countDown(v); applySettings(v); }, onErr("Beállítások olvasása")));
     unsubs.push(fb.onValue(ref("deleted"), s => { const v = s.val(); sizes.deleted = countDown(v); applyDeleted(v); }, onErr("Törlések olvasása")));
     let devFirst = true;
@@ -367,8 +374,8 @@ export function createCloud(api) {
     pulling++; emit();
     try {
       await ensureOnline();
-      const c = fam(), get = p => withTimeout(fb.get(fb.ref(db, `families/${c}/${p}`)), STEP_TIMEOUT * 2, "timeout").then(s => s.val());
-      const [users, settings, parent, deleted, device] = await Promise.all([get("users"), get("settings"), get("parent"), get("deleted"), get(`devices/${dev.id}`)]);
+      const fp = famPath(), ap = appPath(), get = p => withTimeout(fb.get(fb.ref(db, p)), STEP_TIMEOUT * 2, "timeout").then(s => s.val());
+      const [users, settings, parent, deleted, device] = await Promise.all([get(`${ap}/users`), get(`${ap}/settings`), get(`${fp}/parent`), get(`${ap}/deleted`), get(`${ap}/devices/${dev.id}`)]);
       sizes.users = bytes(users); sizes.settings = bytes(settings); sizes.parent = bytes(parent); sizes.deleted = bytes(deleted);
       const total = [users, settings, parent, deleted, device].reduce((a, v) => a + countDown(v), 0);
       dev.count("sync");
@@ -411,7 +418,7 @@ export function createCloud(api) {
       });
       if (!Object.keys(up).length) { emit(); return; }
       try {
-        await op("játékosok", () => fb.update(fb.ref(db, `families/${fam()}`), up));
+        await op("játékosok", () => fb.update(fb.ref(db, appPath()), up));
         const sent = countUp(up); dev.count("sync");
         Object.entries(per).forEach(([name, x]) => { snap.users[name] = apply(snap.users[name] || {}, x.d); snap.logs[name] = x.localKeys; delete snap.legacy[name]; });
         saveSnap();
@@ -421,7 +428,7 @@ export function createCloud(api) {
     })();
     try { await flushing; } finally { flushing = null; emit(); }
   }
-  const pushSettings = () => { if (ready()) op("beállítások", () => { const v = clean(S().settings); countUp(v); return fb.set(fb.ref(db, `families/${fam()}/settings`), v); }).catch(() => {}); };
+  const pushSettings = () => { if (ready()) op("beállítások", () => { const v = clean(S().settings); countUp(v); return fb.set(fb.ref(db, `${appPath()}/settings`), v); }).catch(() => {}); };
   const pushParent = () => { if (ready() && S().parent) op("PIN", () => { countUp(S().parent); return fb.set(fb.ref(db, `families/${fam()}/parent`), S().parent); }).catch(() => {}); };
   async function fetchParent() {
     if (!ready()) return null;
@@ -432,7 +439,7 @@ export function createCloud(api) {
     pending.delete(name); delete snap.users[name]; delete snap.logs[name]; saveSnap();
     if (!ready()) return;
     const key = safeKey(name);
-    op("törlés", () => fb.update(fb.ref(db, `families/${fam()}`), { [`deleted/${key}`]: { name, ts }, [`users/${key}`]: null, [`logs/${key}`]: null })).catch(() => {});
+    op("törlés", () => fb.update(fb.ref(db, appPath()), { [`deleted/${key}`]: { name, ts }, [`users/${key}`]: null, [`logs/${key}`]: null })).catch(() => {});
   }
   // Hibanapló letöltése (a Hibák fül nyitásakor) és egyesítése a helyivel
   async function fetchLogs(name) {
@@ -440,7 +447,7 @@ export function createCloud(api) {
     if (!ready() || !u) return false;
     try {
       await ensureOnline();
-      const v = (await withTimeout(fb.get(fb.ref(db, `families/${fam()}/logs/${safeKey(name)}`)), STEP_TIMEOUT * 2, "timeout")).val() || {};
+      const v = (await withTimeout(fb.get(fb.ref(db, `${appPath()}/logs/${safeKey(name)}`)), STEP_TIMEOUT * 2, "timeout")).val() || {};
       sizes.logs[name] = countDown(v);
       const remote = Object.values(v), before = stable(u.log);
       u.log = mergeLogs(u.log, remote);
@@ -465,23 +472,23 @@ export function createCloud(api) {
     if (remoteDev) Object.keys(up).forEach(k => { if (k !== "lastSeen" && !k.startsWith("traffic/") && stable(remoteDev[k] ?? null) === stable(clean(up[k]) ?? null)) delete up[k]; });
     // a kulcsok útvonalak (pl. traffic/2026-11) – csak az értékeket tisztítjuk
     const payload = Object.fromEntries(Object.entries(up).map(([k, v]) => [k, clean(v)]));
-    op("eszköz", () => { countUp(payload); return fb.update(fb.ref(db, `families/${fam()}/devices/${dev.id}`), payload); })
+    op("eszköz", () => { countUp(payload); return fb.update(fb.ref(db, `${appPath()}/devices/${dev.id}`), payload); })
       .then(() => { remoteDev = { ...(remoteDev || {}), ...up }; }).catch(() => {});
   }
   async function fetchDevices() {
     if (!ready()) return null;
-    try { await ensureOnline(); const v = (await withTimeout(fb.get(fb.ref(db, `families/${fam()}/devices`)), STEP_TIMEOUT * 2, "timeout")).val() || {}; sizes.devices = countDown(v); return v; }
+    try { await ensureOnline(); const v = (await withTimeout(fb.get(fb.ref(db, `${appPath()}/devices`)), STEP_TIMEOUT * 2, "timeout")).val() || {}; sizes.devices = countDown(v); return v; }
     catch (e) { log("⛔", "Eszközlista letöltése: " + errText(e), true); return null; }
     finally { laterOffline(); }
   }
   function updateDevice(id, fields) {
     if (!ready()) return Promise.resolve(false);
     if (id === dev.id) remoteDev = { ...(remoteDev || {}), ...fields };
-    return op("eszköz", () => { countUp(fields); return fb.update(fb.ref(db, `families/${fam()}/devices/${id}`), clean(fields)); }).then(() => true, () => false);
+    return op("eszköz", () => { countUp(fields); return fb.update(fb.ref(db, `${appPath()}/devices/${id}`), clean(fields)); }).then(() => true, () => false);
   }
   function removeDevice(id) {
     if (!ready()) return Promise.resolve(false);
-    return op("eszköz törlése", () => fb.remove(fb.ref(db, `families/${fam()}/devices/${id}`))).then(() => true, () => false);
+    return op("eszköz törlése", () => fb.remove(fb.ref(db, `${appPath()}/devices/${id}`))).then(() => true, () => false);
   }
 
   // ---- Mód szerinti pillanatok ----

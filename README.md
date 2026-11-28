@@ -45,7 +45,7 @@ Egy új tananyag felületi kód nélkül is elkészülhet: a feladat egy rövid 
 ## Új játék (pl. német gyakorló)
 
 1. Hozz létre egy új repót, és másold bele ennek a repónak a tartalmát (vagy indítsd a mintából).
-2. Írd át a `js/game/config.js`-t: cím, `storeKey`, téma (`logo`, `mascot`, `pointsIcon`, `topicWord`, `texts`), `defaults`, Firebase.
+2. Írd át a `js/game/config.js`-t: cím, `storeKey`, téma (`logo`, `mascot`, `pointsIcon`, `topicWord`, `texts`), `defaults`, és egy egyedi `cloudApp` név. A `js/game/firebase-config.js` a közös learn-projektet veszi át (lásd „Közös Firebase-projekt”); új Firebase-projekt nem kell.
 3. Cseréld le a `js/pack/`-ot a saját feladataidra (a minta `js/pack/index.js` a szerződés minden mezőjét bemutatja).
 4. Szabd testre a ranglétrát (`js/game/ranks.js`: a ranghatárok közösek, a nevek és tárgyak sajátok), a tárgyakat, az ünnepeket és az ajándékokat.
 5. Futtasd: `python -m http.server`, majd `http://localhost:8000/#debug`.
@@ -192,3 +192,21 @@ A felolvasás alapból **női hangot** választ, ha az eszközön van (`js/core/
 ## Magától továbblépés kikapcsolható (1.18.0)
 
 Elsőre jó válasz után a játék 1,5 másodperc múlva magától lép a következő feladatra (a „Tovább ▶” gombon egy sáv mutatja az időt). A szülői Beállítások 🎮 Gyakorlás részében gyerekenként kikapcsolható: „⏩ Jó válasz után magától továbblép” (`autoNext`, alapból be; a játék a `GAME.defaults.autoNext` értékkel másik alapértéket adhat). Kikapcsolva a gyerek a „Tovább ▶” gombbal vagy Enterrel lép tovább, így van ideje elolvasni a „Miért?” sort. A régi mentésekben nincs `autoNext` mező: ott marad a magától továbblépés (`autoNextOn()` a `js/shell/settings-defs.js`-ben).
+
+## Közös Firebase-projekt (1.19.0)
+
+Minden gyakorló játék egy közös Firebase-projektet használ (**learn**, `learn-18d3f`, Realtime Database europe-west1). Az adatai a keretben vannak (`js/core/firebase-learn.js`, `LEARN_FIREBASE`), a játék `js/game/firebase-config.js`-e csak átveszi. A családot egyszer kell létrehozni: egy új játék Google-belépés után a `memberOf` ágból magától megtalálja.
+
+```
+memberOf/{e-mail}/{család}                         = true    ← közös
+families/{család}/members/{e-mail}                 = true    ← közös: a szülők
+families/{család}/parent                           = {salt, hash}   ← közös szülői PIN
+families/{család}/apps/{cloudApp}/users/{gyerek}   = {…}     ← játékonként
+families/{család}/apps/{cloudApp}/logs | settings | deleted | devices
+```
+
+- A `cloudApp` a játék `config.js`-ében adott rövid, egyedi név (`matek`, `helyesiras`, `nemet`, …). Később nem szabad megváltoztatni, mert az a játék adatainak a helye. `cloudApp` nélkül a játék adatai a régi helyen, közvetlenül a `families/{család}` alatt vannak.
+- Az adatbázis szabályai a keretben vannak (`database.rules.json`), a másoló viszi az appokba. A családtagok a család teljes ágát olvashatják és írhatják, ezért új játékhoz nem kell rajtuk változtatni.
+- **Átköltözés régi projektből:** ha a játék új projektre vált, a belépés után átveszi a közös családot (vagy a szülő létrehozza, ha ez az első játék), és a helyben tárolt eredményeket feltölti a saját ágára. A közös PIN közül az elsőként feltöltött marad meg. Az eszközlista és a forgalomstatisztika újraindul.
+- **A learn-projekt beállításai** (ha újra kellene létrehozni): webalkalmazás; *Authentication → Google* bekapcsolva, *Authorized domains*: `vargamiki.github.io`; *Realtime Database* Belgiumban (europe-west1), locked mode, a *Rules* fülön a `database.rules.json` tartalma.
+- Teszt: `tests/kozos-felho.test.mjs` (két játék ugyanazzal a gyereknévvel, közös PIN, átköltözés régi családkódról, törlés csak a saját ágon).
