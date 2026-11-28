@@ -127,5 +127,20 @@ ok(N.state.parent && N.state.parent.hash === "h-matek", "átköltözés: a köz�
 M.cloud.markDeleted("Anna", Date.now()); await sleep(30);
 ok(!server.getAt(`families/${FAM}/apps/matek/users/Anna`) && server.getAt(`families/${FAM}/apps/helyesiras/users/Anna`), "törlés: a matekos Anna lekerült, a helyesírásos megmaradt");
 
+// 6) átköltözés üres eszközről: ha egy 0 feladatos (de később módosított) eszköz hozta létre a játékost,
+//    a valódi eredményeket tartó eszköz belépéskor nem veszít, hanem a több feladatos állás marad meg
+{
+  const ures = E.newUser("Bence", "🐻"); ures.upd = Date.now() + 60000;
+  const U = game("matek", { Bence: ures });
+  await U.cloud.init(); await waitReady(U.cloud); await U.cloud.flush();
+  const valodi = E.newUser("Bence", "🐻"); play(valodi, 25); valodi.upd = Date.now() - 86400000;
+  const V = game("matek", { Bence: valodi }, { familyCode: "fregi1111111111111111111" });
+  await V.cloud.init(); await waitReady(V.cloud); await V.cloud.flush();
+  ok(V.state.users.Bence.total === 25, "üres eszköz után: a valódi eszközön megmaradt a 25 feladat");
+  ok((server.getAt(`families/${FAM}/apps/matek/users/Bence`) || {}).total === 25, "üres eszköz után: a felhőbe is a 25 feladatos állás került");
+  await U.cloud.checkpoint("now");
+  ok(U.state.users.Bence.total === 25, "az üres eszköz letöltötte a valódi eredményt");
+}
+
 console.log(fails ? `\n✗ ${fails} hiba` : "\n✓ Minden teszt rendben");
 process.exit(fails ? 1 : 0);

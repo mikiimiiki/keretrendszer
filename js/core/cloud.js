@@ -317,7 +317,11 @@ export function createCloud(api) {
         st.users[name] = api.normUser(clone({ ...r, log: legacyLog || [] })); changed++;
       } else {
         const lv = forSync(l), base = snap.users[name];
-        const m = merge(base, r, lv, (l.upd || 0) > (r.upd || 0));
+        // Első találkozás (nincs közös előzmény, pl. átköltözés után): a több feladatot tartalmazó állás nyer,
+        // hogy egy üres vagy kevesebbet játszott eszköz ne írja felül a valódi eredményeket. Utána a frissebb nyer.
+        const localNewer = base ? (l.upd || 0) > (r.upd || 0)
+          : (l.total || 0) !== (r.total || 0) ? (l.total || 0) > (r.total || 0) : (l.upd || 0) > (r.upd || 0);
+        const m = merge(base, r, lv, localNewer);
         const logs = legacyLog ? mergeLogs(l.log, legacyLog) : l.log;
         if (Object.keys(diff(m, lv)).length || logs !== l.log) { st.users[name] = api.normUser({ ...m, log: logs }); changed++; }
         if (Object.keys(diff(forSync(st.users[name]), r)).length) pending.add(name);
