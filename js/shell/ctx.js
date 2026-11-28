@@ -1,7 +1,7 @@
 // ===== A váz közös állapota és segédei =====
 // C: a játék (GAME), a feladatcsomag (PACK), a beállításleírók, az állapot, a felhő, az eszköz és az aktuális kör.
 // A képernyőmodulok (home, play, players, collection, holidays, …) mind ezt használják.
-import { $, speechClean } from "../core/dom.js";
+import { $ } from "../core/dom.js";
 import { resolve } from "../core/settings.js";
 import { unlockedSet, equipped, applyVars, swapClass } from "../core/cosmetics.js";
 import { activeEvents } from "../core/events.js";
@@ -11,6 +11,7 @@ import { snowToday, cachedSnow } from "../core/weather.js";
 import { streakNow } from "../core/dailygoal.js";
 import { playSound } from "../core/sound.js";
 import { pickVoice } from "../core/voices.js";
+import { speechParts } from "../core/lang.js";
 
 export const C = { game: null, pack: null, defs: [], state: null, cloud: null, device: null, rng: null, S: null, tts: false, gearApi: null };
 export const G = () => C.game;
@@ -106,11 +107,13 @@ export function speak(html, lang) {
   if (!("speechSynthesis" in window)) return;
   speechSynthesis.cancel();
   lang = lang || G().speechLang || "hu-HU";
+  // nyelv szerinti darabok (<span lang="de-DE">…</span>), mindegyik a saját nyelvű hanggal;
   // emojik és jelek nélkül (a felolvasó ne mondja ki pl. a 📏 / 🧠 / ⭐ jelek nevét)
-  const text = speechClean((C.pack.speechText || (x => String(x)))(html));
-  if (!text) return;
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = lang; u.rate = 0.95;
-  const v = pickVoice(speechSynthesis.getVoices(), lang, voicePref()); if (v) u.voice = v;
-  speechSynthesis.speak(u);
+  const voices = speechSynthesis.getVoices();
+  for (const part of speechParts(html, lang, C.pack && C.pack.speechText)) {
+    const u = new SpeechSynthesisUtterance(part.text);
+    u.lang = part.lang; u.rate = 0.95;
+    const v = pickVoice(voices, part.lang, voicePref()); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  }
 }

@@ -20,6 +20,7 @@ import { checkHolidays } from "./holidays.js";
 import { trophyRain, openGifts } from "./goal-ui.js";
 import { maybeAskDevice } from "./players.js";
 import { openHelp, openTopicHelp } from "./help.js";
+import { coveredBy, uniqueTexts } from "../core/dedupe.js";
 
 let S = null; // aktuális kör
 // „Vissza a főmenüre / térképre / bázisra”: a -ra/-re az utolsó nem i/í magánhangzó szerint (az i, í semleges)
@@ -234,8 +235,10 @@ function correct() {
   const praise = ev.improved ? IMPROVED_TITLE : rr === 1 ? PRAISE()[C.rng.int(0, PRAISE().length - 1)] : "Javítottad! ✔️";
   $("side-body").innerHTML = `<div class="fb ok${ev.improved ? " improved" : ""}"><div class="fb-title">${praise}</div>${ev.improved ? IMPROVED_TEXT : rr === 1 ? "Elsőre sikerült!" : `A helyes válasz: <b>${esc(t.correctText)}</b>. A tipp után megtaláltad – ügyes!`} <b>+${ev.pts} ${G().pointsIcon}</b>${ev.combo >= 3 && rr === 1 ? `<br>🔥 ${ev.combo}. elsőre jó egymás után!` : ""}${S.twin ? "<br>🧠 Hibából tanultál – ez a legjobb!" : ""}</div>`;
   // „Miért?” – a feladat szabálya / magyarázata jó válasz után is (task.rule, elhagyható; pl. „📏 Szabály: …”)
-  if (t.rule) $("side-body").append(el("div", "fb-why", `<b>Miért?</b> ${t.rule}`));
-  if (rr === 2) $("side-body").append(btn("secondary", "👀 Megnézem a megoldást", () => { $("side-body").append(stepsAll(t)); }));
+  // – kivéve, ha szó szerint ugyanaz, mint az imént látott tipp (ugyanaz a szöveg ne jelenjen meg kétszer)
+  const seen = rr === 2 ? [t.hint] : [];
+  if (t.rule && !coveredBy(t.rule, seen)) { $("side-body").append(el("div", "fb-why", `<b>Miért?</b> ${t.rule}`)); seen.push(t.rule); }
+  if (rr === 2) $("side-body").append(btn("secondary", "👀 Megnézem a megoldást", () => { $("side-body").append(stepsAll(t, seen)); }));
   sfx(ev.improved ? "improved" : "ok");
   if (C.tts) speak(ev.improved ? `Fejlődtél! ${IMPROVED_TEXT}` : praise);
   afterEvents(ev);
@@ -249,15 +252,17 @@ function explain(v) {
   S.res.push(0); S.idx++; keepResume();
   save(); renderTop(); renderDots();
   const why = t.why(v);
+  // egyforma lépésből csak egy; a „Lehet, hogy itt csúszott el” sor elmarad, ha ugyanaz (vagy benne van) egy lépésben
+  const steps = uniqueTexts(t.steps).length ? uniqueTexts(t.steps) : t.steps;
   const sb = $("side-body");
   sb.innerHTML = `<div class="fb bad"><div class="fb-title">${G().texts.explainTitle}</div>Semmi baj – ebből tanulunk. Lépésről lépésre megmutatom.</div>`;
-  sb.append(el("div", "yours", `A te válaszod: <b>${esc(t.answerText(v))}</b>` + (why ? `<br>💡 Lehet, hogy itt csúszott el: ${why}` : "")));
+  sb.append(el("div", "yours", `A te válaszod: <b>${esc(t.answerText(v))}</b>` + (why && !coveredBy(why, steps) ? `<br>💡 Lehet, hogy itt csúszott el: ${why}` : "")));
   const box = el("div", "steps"); sb.append(box);
   let k = 0;
   const step = () => {
-    box.append(el("div", "step", t.steps[k])); if (C.tts) speak(t.steps[k]); k++;
+    box.append(el("div", "step", steps[k])); if (C.tts) speak(steps[k]); k++;
     S.lockUntil = Date.now() + 400;
-    if (k < t.steps.length) { setActions([btn("primary big", "Tovább ▶", step)]); S.onNext = step; }
+    if (k < steps.length) { setActions([btn("primary big", "Tovább ▶", step)]); S.onNext = step; }
     else {
       S.ui.showCorrect();
       // Ikerfeladat: az első hiba után EGY hasonló feladat kötelező. Ha már az ikerfeladat sem sikerült,
@@ -284,7 +289,8 @@ function explain(v) {
   step();
   afterEvents(ev);
 }
-function stepsAll(t) { const box = el("div", "steps"); t.steps.forEach(s => box.append(el("div", "step", s))); return box; }
+// a teljes megoldás – az imént már látott szövegek (tipp, „Miért?”) nélkül
+function stepsAll(t, seen = []) { const box = el("div", "steps"); uniqueTexts(t.steps, seen).forEach(s => box.append(el("div", "step", s))); return box; }
 // auto = elsőre jó válasz: 1,5 mp múlva magától továbblép (a gombon egy sáv mutatja az időt)
 const AUTO_NEXT_MS = 1500;
 function nextButton(auto = false) {

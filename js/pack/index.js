@@ -5,6 +5,7 @@ import { el, escHtml } from "../core/dom.js";
 import { GERMAN_KEYS } from "../core/answer-spec.js";
 import { newItem, srsStep, accuracy, isDue } from "../core/srs.js";
 import { dayNum } from "../core/dates.js";
+import { de } from "../core/lang.js";
 import { WORDS } from "./words.js";
 
 const TOPICS = [
@@ -18,8 +19,10 @@ const shuffle = (a, rng) => rng.shuffle(a);
 const word = w => WORDS.find(x => x.de === w);
 
 // A minta felületi kód nélkül készül: a feladat egy felületleírást ad (answer: { kind, … }), a keret választja hozzá
-// a közös felületet, és a megoldáshoz (solution) hasonlít. A német szót német hang olvassa fel (speechLang).
+// a közös felületet, és a megoldáshoz (solution) hasonlít. A német szót német hang olvassa fel: a csak németül
+// felolvasott feladatnál speechLang, a vegyes szövegekben (kérdés, lépések) a német rész jelölése: de("…").
 const DE = "de-DE";
+const deWord = w => de(escHtml(w.de)), deFull = w => de(`${escHtml(w.art)} ${escHtml(w.de)}`);
 
 export const PACK = {
   contractVersion: 1,
@@ -51,25 +54,25 @@ export const PACK = {
     const base = { topic: T.id, sub: w.de, level: L, meta: `${T.icon} ${T.name}`, viz: "", why: () => null, answerText: v => String(v), plainQ: w.de };
     if (T.id === "nevelo") {
       const opts = ["der", "die", "das"].slice(0, Math.max(2, nOpt)); if (!opts.includes(w.art)) opts[opts.length - 1] = w.art;
-      return { ...base, q: `<b>Melyik névelő illik a szóhoz?</b><div class="word-display">… ${escHtml(w.de)}</div><p class="soft">(${escHtml(w.hu)})</p>`, solution: w.art, correctText: `${w.art} ${w.de}`,
+      return { ...base, q: `<b>Melyik névelő illik a szóhoz?</b><div class="word-display">… ${deWord(w)}</div><p class="soft">(${escHtml(w.hu)})</p>`, solution: w.art, correctText: `${w.art} ${w.de}`,
         answer: { kind: "choice", options: shuffle(opts, rng), correct: w.art },
-        hint: "A névelőt a szóval együtt érdemes megtanulni. Gondolj a többi hasonló végű szóra!", steps: [`A helyes alak: <b>${escHtml(w.art)} ${escHtml(w.de)}</b>`, `Jelentése: ${escHtml(w.hu)}`], speech: w.de, speechLang: DE };
+        hint: "A névelőt a szóval együtt érdemes megtanulni. Gondolj a többi hasonló végű szóra!", steps: [`A helyes alak: <b>${deFull(w)}</b>`, `Jelentése: ${escHtml(w.hu)}`], speech: w.de, speechLang: DE };
     }
     if (T.id === "tiles") {
       return { ...base, q: `<b>Rakd ki németül!</b><div class="word-display">${escHtml(w.hu)}</div>`,
         answer: { kind: "tiles", word: w.de, clueText: w.hu, isVowel: ch => /[aeiouäöü]/i.test(ch) },
         hint: "Figyelj a kezdőbetűre és az ékezetekre! A helyükön lévő lapkák zölden maradnak.",
-        steps: [`A helyes alak: <b>${escHtml(w.art)} ${escHtml(w.de)}</b>`], speech: w.hu };
+        steps: [`A helyes alak: <b>${deFull(w)}</b>`], speech: w.hu };
     }
     if (T.id === "iras") {
       return { ...base, q: `<b>Írd le németül!</b><div class="word-display">${escHtml(w.hu)}</div>`,
         answer: { kind: "text", correct: w.de, className: "minp", placeholder: "Írd be…", empty: "Írd be a szót!", extraKeys: GERMAN_KEYS },
-        hint: `A szó ${w.de.length} betűs, és „${escHtml(w.de[0])}” betűvel kezdődik. A főneveket nagybetűvel írjuk!`, steps: [`A helyes alak: <b>${escHtml(w.art)} ${escHtml(w.de)}</b>`], speech: w.hu };
+        hint: `A szó ${w.de.length} betűs, és „${escHtml(w.de[0])}” betűvel kezdődik. A főneveket nagybetűvel írjuk!`, steps: [`A helyes alak: <b>${deFull(w)}</b>`], speech: w.hu };
     }
     const wrong = shuffle(WORDS.filter(x => x !== w), rng).slice(0, nOpt - 1).map(x => x.hu);
-    return { ...base, q: `<b>Mit jelent?</b><div class="word-display">${escHtml(w.art)} ${escHtml(w.de)}</div>`,
+    return { ...base, q: `<b>Mit jelent?</b><div class="word-display">${deFull(w)}</div>`,
       answer: { kind: "choice", options: shuffle([w.hu, ...wrong], rng), correct: w.hu },
-      hint: "Mondd ki hangosan! Hasonlít valamelyik magyar vagy angol szóra?", steps: [`${escHtml(w.art)} ${escHtml(w.de)} = <b>${escHtml(w.hu)}</b>`], speech: w.de, speechLang: DE };
+      hint: "Mondd ki hangosan! Hasonlít valamelyik magyar vagy angol szóra?", steps: [`${deFull(w)} = <b>${escHtml(w.hu)}</b>`], speech: w.de, speechLang: DE };
   },
   // 🌱 fejlődésjelzés: ugyanaz a feladat = ugyanaz a téma és szó
   progressKey: t => `${t.topic}:${t.sub}`,
