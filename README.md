@@ -27,7 +27,7 @@ Egy új tananyag felületi kód nélkül is elkészülhet: a feladat egy rövid 
 { q: "Rakd ki: utca", answer: { kind: "tiles", word: "Straße", clueText: "utca" } }
 ```
 
-- Fajták: `choice` (választós, 1–4 billentyű), `text` (szöveg; `extraKeys`: különleges betűk gombsora, pl. `GERMAN_KEYS` = ä ö ü ß Ä Ö Ü), `number` (szám, tizedesvesszővel is), `tiles` (Betűkirakó; `clueText`, `isVowel`, `arrange` elhagyható).
+- Fajták: `gap` (hiányzó rész egy szóban: `{ kind: "gap", word: "bútor", part: "ú", options: ["ú", "u"] }`, beírással `input: "text"` + `extraKeys` – a választott vagy beírt rész azonnal a hiányba kerül; `HUNGARIAN_KEYS` / `GERMAN_KEYS` gombsor), `choice` (választós, 1–4 billentyű), `text` (szöveg; `extraKeys`: különleges betűk gombsora, pl. `GERMAN_KEYS` = ä ö ü ß Ä Ö Ü), `number` (szám, tizedesvesszővel is), `tiles` (Betűkirakó; `clueText`, `isVowel`, `arrange` elhagyható).
 - Alapértelmezett összevetés: Unicode-egységesítés, szélső szóközök levágása, belső szóközök összevonása; kis- és nagybetű, ékezet számít. Saját szabály: `task.normalize` vagy a csomag `normalizeAnswer` függvénye. Több jó válasz: `solution: ["colour", "color"]`.
 - `speechLang` (pl. `"de-DE"`): a feladat felolvasásának nyelve; alapból a játék nyelve.
 - Saját felület továbbra is adható: `render(box, io)` → vezérlő. **Csak a `read()` kötelező**; a `markWrong`, `markRight`, `lock`, `showCorrect`, `dispose`, `onKey` elhagyható – ha hiányzik, a keret kihagyja, ha hibát dob, a konzolra írja, a kör, a pont és a mentés nem sérül. Ha a `read()` hiányzik vagy hibát dob, a feladat eredmény nélkül zárul.
@@ -147,6 +147,7 @@ node tools/pack-ellenorzes.mjs [../app]   # tananyag-ellenőrző
 node tests/jatekos-bovitesek.test.mjs  # ajánlatok, kör folytatása, fejlődésjelzés, Saját sarkom, hang, heti ablak (szimulált DOM)
 node tests/heti-hang.test.mjs          # heti összefoglaló számai, hangjelzés
 node tests/idojaras.test.mjs           # időjárás alapú hóesés (ál-időjárással), város beállítás
+node tests/gap.test.mjs                # hiányzó rész felület (választás, beírás, hibás leírás)
 node tools/tesztek.mjs [../app]   # az összes teszt és a tananyag-ellenőrző egyben (a keretben vagy egy appban)
 ```
 
