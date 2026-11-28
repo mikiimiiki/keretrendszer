@@ -15,6 +15,7 @@ export const GAME = {
   settingsTitle: "⚙️ Szülői beállítások",
   storeKey: "minta_szotanulo_v1", simKey: "minta_szotanulo_sim",
   firebase: FIREBASE_CONFIG,      // üres apiKey → helyi mód
+  cloudApp: "",                   // felhőág a közös learn-projektben (pl. "matek"); játékonként egyedi, később nem változtatható
   serviceWorker: "",              // offline működéshez: "sw.js"
   bodyClass: "",                  // pl. "theme-light" világos témához (a játék saját CSS-ében)
   logo: "🚀", mascot: "🧑‍🚀",

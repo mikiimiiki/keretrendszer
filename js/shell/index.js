@@ -53,7 +53,7 @@ export function startShell({ game, pack }) {
   // ---- eszköz és felhő ----
   C.device = createDevice(C.storeKey);
   C.cloud = createCloud({
-    config: game.firebase, state: () => C.state, persist, normUser: normMig, device: C.device, storeKey: C.storeKey,
+    config: game.firebase, app: game.cloudApp, state: () => C.state, persist, normUser: normMig, device: C.device, storeKey: C.storeKey,
     onDevice: onDeviceRemote,
     refresh: () => {
       M.family(C.state);
