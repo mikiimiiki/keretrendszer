@@ -120,10 +120,15 @@ A szkript átmásolja a `js/core`, `js/shell`, `css/style.css` és `tests/keret.
 
 ## Forrásfájlok exportja és visszaállítása
 
-Egy repó összes követett szöveges fájlja egyetlen Markdown-fájlba (pl. e-mailhez, átnézéshez, AI-nak), mindegyik előtt az elérési úttal (`# js/main.js` + kódblokk), és vissza:
+Egy vagy több mappa összes szöveges fájlja egyetlen Markdown-fájlba (pl. e-mailhez, átnézéshez, AI-nak), mindegyik előtt az elérési úttal (`# js/main.js` + kódblokk), és vissza. Git-repóban a követett fájlok kerülnek bele, sima mappában minden fájl (a `.git`, `node_modules`, `__pycache__`, `reports` mappák nélkül). Több mappánál az utak elé a mappa neve kerül (pl. `Massalhangzok/js/main.js`), így visszabontáskor mappánként szétválnak.
+
+**Ablakkal:** dupla kattintás a `tools/forras-export-ablak.pyw` fájlra. Hozzáadod a mappá(ka)t, megadod a kimeneti `.md` fájlt (magától javasol egy nevet), és az **📄 Exportálás** gombbal kész; a **📂 Megnyitás a mappában** gomb megmutatja a fájlt. Az utoljára használt beállításokat megjegyzi (`~/.forras-export.json`).
+
+**Parancssorból:**
 
 ```bash
 python tools/forras-export.py ../Massalhangzok ../Massalhangzok_forras.md "Helyesírás Kaland"
+python tools/forras-export.py . ../Felvételi_matek ../Massalhangzok --ki ../Teljes_forras.md --cim "Gyakorló játékok"
 python tools/forras-import.py ../Massalhangzok_forras.md ../Massalhangzok_visszaallitva
 ```
 

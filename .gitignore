@@ -3,3 +3,6 @@ node_modules/
 
 # a tools/tesztek.mjs naplói
 reports/
+
+# Python gyorsítótár (a forras-export-ablak.pyw betölti a forras-export.py-t)
+__pycache__/
