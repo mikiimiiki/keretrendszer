@@ -180,3 +180,7 @@ Mind a keretben van, egy új tananyag külön kód nélkül megkapja (a fejlőd�
 - A város a ⚙️ szülői beállítások „🎄 Ünnepek és időjárás” csoportjában állítható gyerekenként (`city`, alapból **Győr**; a játék a `GAME.defaults.city`-vel mást adhat). Csak a város neve megy ki, pontos helyet nem kérünk.
 - Tartalék: ha nincs adat (nincs internet, ismeretlen város, szimulált nap), a régi naptári szabály dönt (december 1. – január 6., ünnepi eseményekkel). A ❄️ kapcsoló és a csökkentett mozgás továbbra is kikapcsolja.
 - Új beállítástípus: `type: "text"` (`maxLength`, `placeholder`).
+
+## Felolvasó hang (1.16.0)
+
+A felolvasás alapból **női hangot** választ, ha az eszközön van (`js/core/voices.js`: pl. iPad – Mariska, Chrome – Google magyar, Edge – Noémi). A szülő a ⚙️ → Beállítások fül alján („🔊 Felolvasó hang – ezen az eszközön”) választhat a böngésző hangjai közül, és ▶ meghallgathatja. A választás eszközönként, a böngészőben tárolódik (`<storeKey>_voice`), mert a hangok eszközönként mások. Idegen nyelvű feladatnál (`speechLang`) az adott nyelv hangjai közül választ, szintén női hangot előnyben.

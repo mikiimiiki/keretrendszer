@@ -18,3 +18,17 @@ assert.equal(aAz("ujj", true), "Az");
 assert.equal(fixArticles("Meg kell jegyezni: a(z) „ujj” szóban, a(z) „kapu” kivétel. A(z) 5 almából"), "Meg kell jegyezni: az „ujj” szóban, a „kapu” kivétel. Az 5 almából");
 assert.equal(speechClean("🧠 Meg kell jegyezni: a(z) „ujj” szóban"), "Meg kell jegyezni: az „ujj” szóban");
 console.log("a / az: rendben.");
+
+// 🔊 hangválasztás: női hang előnyben, a választott (ha van) nyer, más nyelvű hang nem jöhet
+import { pickVoice, voicesFor, voiceGender } from "../js/core/voices.js";
+const V = (name, lang, localService = true) => ({ name, lang, localService });
+const voices = [V("Microsoft Szabolcs - Hungarian (Hungary)", "hu-HU"), V("Google magyar", "hu-HU", false), V("Mariska", "hu-HU"), V("Anna", "de-DE"), V("Microsoft Stefan", "de-DE"), V("Samantha", "en-US")];
+assert.equal(voiceGender(voices[0]), "férfi"); assert.equal(voiceGender(voices[2]), "női");
+assert.equal(voiceGender(V("Microsoft Noémi Online (Natural) - Hungarian", "hu-HU", false)), "női");
+assert.equal(pickVoice(voices, "hu-HU").name, "Mariska", "alapból női (helyi hang előnyben)");
+assert.equal(pickVoice(voices, "hu-HU", "Microsoft Szabolcs - Hungarian (Hungary)").name, "Microsoft Szabolcs - Hungarian (Hungary)", "a választott nyer");
+assert.equal(pickVoice(voices, "hu-HU", "Nincs ilyen").name, "Mariska", "nem létező választásnál automatikus");
+assert.equal(pickVoice(voices, "de-DE", "Mariska").name, "Anna", "más nyelvhez az adott nyelv női hangja");
+assert.equal(pickVoice([voices[0]], "hu-HU").name, "Microsoft Szabolcs - Hungarian (Hungary)", "ha nincs női, a meglévő");
+assert.equal(pickVoice(voices, "fr-FR"), null); assert.equal(voicesFor(voices, "hu-HU").length, 3);
+console.log("Felolvasó hang: rendben.");
